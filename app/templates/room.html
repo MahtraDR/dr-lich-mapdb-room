@@ -3,6 +3,41 @@
 	    <title>{{ room.title[0] }}</title>
     </head>
     <body>
-	    {{ room }}
+	    <table align="left">
+		    <tr>
+			    <th align="left">{{ room.title[0] }}</th>
+		    </tr>
+		    <tr>
+			    <td align="left">{{ room.description[0] }}</td>
+                    </tr>
+		    <tr>
+			    <td align="left">{{ room.paths[0] }}</td>
+		    </tr>
+		    <tr></tr>
+		    <tr></tr>
+		    <tr align="left">
+			    <td align="left">Map: {{ room.image }}</td>
+		    </tr>
+	    </table>
+	    {% if room.image %}
+	    <div id="container" style="padding:0;position: relative">
+		<img style="max-width: auto;height:auto" src="{{url_for('static', filename='maps/' + room.image)}}"</img>
+       		<div id="highlight" style="padding: 0;border: 2;position: absolute;width:{{ room_box.width -2 }}px;height:{{ room_box.height }}px;top:{{ room_box.y + 110}}px;left:{{ room_box.x }}px;background: rgba(255, 0, 0, 0.4);border-color: green;border-style: solid"</div>
+	    </div>
+	    {% endif %}
+	    <br>
+	    <br>
+	    <br>
+	    <br>
+	    <table align="left" border="1">
+		    <th align="left">Connecting room</th>
+		    <th align="left">Exit</th>
+		    {% for room_exit, room_way in room.wayto.items() %}
+		    <tr>
+			    <td align="left"><a href="{{ room_exit }}">{{ room_exit }}</td>
+			    <td align="left">{{ room_way }}</td>
+		    </tr>
+		    {% endfor %}
+	    </table>
     </body>
 </html>
