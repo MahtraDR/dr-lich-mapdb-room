@@ -23,8 +23,8 @@ def room_page(room_id):
     room = rd_dict.get(room_id)
     orig_ratio = 1
     size_mod = 1
-    if room.image:
-        with Image.open('app/static/maps/' + room.image) as img:
+    if room.get('image'):
+        with Image.open('app/static/maps/' + room['image']) as img:
             orig_width, orig_height = img.size
         orig_ratio = float(orig_width) / float(orig_height)
         size_mod = 1000 / float(orig_width)
