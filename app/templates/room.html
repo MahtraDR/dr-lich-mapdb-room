@@ -21,7 +21,7 @@
 	    </table>
 	    {% if room.image %}
 	    <div id="container" style="padding:0;position: relative">
-		<img style="max-width: auto;height:auto" src="{{url_for('static', filename='maps/' + room.image)}}"</img>
+		<img style="max-width: 800;height:auto" src="{{url_for('static', filename='maps/' + room.image)}}"</img>
        		<div id="highlight" style="padding: 0;border: 2;position: absolute;width:{{ room_box.width -2 }}px;height:{{ room_box.height }}px;top:{{ room_box.y + 110}}px;left:{{ room_box.x }}px;background: rgba(255, 0, 0, 0.4);border-color: green;border-style: solid"</div>
 	    </div>
 	    {% endif %}
