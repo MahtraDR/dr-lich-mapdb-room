@@ -1,5 +1,7 @@
 from flask import Flask 
 from flask import render_template, url_for, request
+from PIL import Image
+from math import floor
 import json
 
 app = Flask(__name__) 
@@ -19,9 +21,16 @@ def root():
 def room_page(room_id):
     room_box = {'x': 0, 'y': 0, 'width': 0, 'height': 0}
     room = rd_dict.get(room_id)
+    orig_ratio = 1
+    size_mod = 1
+    if room.image:
+        with Image.open('app/static/maps/' + room.image) as img:
+            orig_width, orig_height = img.size
+        orig_ratio = float(orig_width) / float(orig_height)
+        size_mod = 1000 / float(orig_width)
     if room.get("image_coords"):
-        room_box['x'] = room['image_coords'][0]
-        room_box['y'] = room['image_coords'][1]
+        room_box['x'] = floor(size_mod * room['image_coords'][0])
+        room_box['y'] = floor(size_mod * room['image_coords'][1] * orig_ratio)
         room_box['width'] = room['image_coords'][2] - room['image_coords'][0]
         room_box['height'] =  room['image_coords'][3] - room['image_coords'][1]
     if not room:
