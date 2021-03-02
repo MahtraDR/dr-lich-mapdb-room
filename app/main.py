@@ -31,8 +31,8 @@ def room_page(room_id):
     if room.get("image_coords"):
         room_box['x'] = floor(size_mod * room['image_coords'][0])
         room_box['y'] = floor(size_mod * room['image_coords'][1] * orig_ratio)
-        room_box['width'] = room['image_coords'][2] - room['image_coords'][0]
-        room_box['height'] =  room['image_coords'][3] - room['image_coords'][1]
+        room_box['width'] = floor(size_mod * (room['image_coords'][2] - room['image_coords'][0]))
+        room_box['height'] =  floor(size_mod * (room['image_coords'][3] - room['image_coords'][1]) * orig_ratio)
     if not room:
         return "Room not found"
     return render_template('room.html', room=room, room_box=room_box)
