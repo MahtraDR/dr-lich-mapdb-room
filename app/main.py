@@ -44,7 +44,7 @@ def room_page(room_id):
         room_box["x"] = floor(width_ratio * room["image_coords"][0])
         room_box["y"] = floor(height_ratio * room["image_coords"][1])
         box_width = floor(height_ratio * room["image_coords"][2]) - floor(
-            height_ratio * room["image_coords"][0]
+            width_ratio * room["image_coords"][0]
         )
         box_height = floor(height_ratio * room["image_coords"][3]) - floor(
             height_ratio * room["image_coords"][1]
