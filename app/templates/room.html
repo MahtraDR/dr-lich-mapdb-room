@@ -1,44 +1,81 @@
 <html>
     <head>
-	    <title>{{ room.title[0] }}</title>
+            <title>{{ room.title[0] }} - Lich: {{ room.id }} - UID: {{ room.uid | first }}</title>
+            <style>
+                .highlight_box {
+                    padding: 0;
+                    border: 2;
+                    position: absolute;
+                    width:{{ room_box.width }}px;
+                    height:{{ room_box.height }}px;
+                    top:{{ room_box.y + 91 }}px;
+                    left:{{ room_box.x + 5 }}px;
+                    border-style: solid;
+                    border-color: green;
+                    animation: animationFrames 5s infinite;
+                }
+
+                @keyframes animationFrames {
+                    50% {
+                        border-color: green;
+                        background-color: palevioletred;
+                    }
+                }
+            </style>
     </head>
     <body>
-	    <table align="left">
-                    <tr><th align="left">{{ room.id }} / {{ room.uid }}</th></tr>
-		    <tr>
-			    <th align="left">{{ room.title[0] }}</th>
-		    </tr>
-		    <tr>
-			    <td align="left">{{ room.description[0] }}</td>
-                    </tr>
-		    <tr>
-			    <td align="left">{{ room.paths[0] }}</td>
-		    </tr>
-		    <tr></tr>
-		    <tr></tr>
-		    <tr align="left">
-			    <td align="left">Map: {{ room.image }}</td>
-		    </tr>
-	    </table>
-	    {% if room.image %}
-	    <div id="container" style="padding:0;position: relative">
-		<img style="max-width: 1000;height:{{ image_dimensions.new_height }}" src="{{url_for('static', filename='maps/' + room.image)}}"</img>
-       		<div id="highlight" style="padding: 0;border: 2;position: absolute;width:{{ room_box.width }}px;height:{{ room_box.height }}px;top:{{ room_box.y + 125 }}px;left:{{ room_box.x }}px;background: rgba(255, 0, 0, 0.4);border-color: green;border-style: solid"</div>
-	    </div>
-	    {% endif %}
-	    <br>
-	    <br>
-	    <br>
-	    <br>
-	    <table align="left" border="1">
-		    <th align="left">Connecting room</th>
-		    <th align="left">Exit</th>
-		    {% for room_exit, room_way in room.wayto.items() %}
-		    <tr>
-			    <td align="left"><a href="{{ room_exit }}">{{ room_exit }}</td>
-			    <td align="left">{{ room_way }}</td>
-		    </tr>
-		    {% endfor %}
-	    </table>
+        <div id="header">
+                <h3>{{ room.title[0] }}</h3>
+                <h4>Lich: {{ room.id }} - UID: {{ room.uid | first }}</h2>
+        </div>
+        <div id=wrapper>
+            {% if room.image %}
+            <div id="image_wrapper" style="padding:0;position: static">
+                <div id=image>
+                    <img style="max-width: 1000;height:{{ image_dimensions.height }}" src="{{url_for('static', filename='maps/' + room.image)}}">
+                </div>
+                <div id="highlight_box" class="highlight_box">
+                    <!-- drawing highlight box-->
+                </div>
+            </div>
+            {% endif %}
+            <div id=after_image>
+                <div id=desc_table style="clear:both;">
+                    <table align="left">
+                        <tr>
+                            <td align="left">{{ room.description[0] }}</td>
+                        </tr>
+                        <tr>
+                            <td align="left">{{ room.paths[0] }}</td>
+                        </tr>
+                        <tr align="left">
+                            <td align="left">Map: {{ room.image }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div id=exit_table style="clear:both;">
+                    <table align="left" border="1">
+                        <tr>
+                            <th align="left">
+                                Connecting room
+                            </th>
+                            <th align="left">
+                                Exit
+                            </th>
+                        </tr>
+                    {% for room_exit, room_way in room.wayto.items() %}
+                        <tr>
+                            <td align="left">
+                                <a href="{{ room_exit }}">{{ room_exit }}
+                            </td>
+                            <td align="left">
+                                {{ room_way }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

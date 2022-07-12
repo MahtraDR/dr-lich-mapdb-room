@@ -30,8 +30,11 @@ def room_page(room_id):
     if is_uid:
         room_id = f'u{room_id}'
     room = rd_dict.get(room_id)
+    if not room:
+        return "Room not found"
     orig_ratio = 1
     size_mod = 1
+    new_width = new_height = False
     if room.get("image"):
         with Image.open("app/static/maps/" + room["image"]) as img:
             orig_width, orig_height = img.size
@@ -51,7 +54,5 @@ def room_page(room_id):
         )
         room_box["width"] = box_width
         room_box["height"] = box_height
-    if not room:
-        return "Room not found"
     image_dims = {'width': new_width, 'height': new_height}
     return render_template("room.html", room=room, room_box=room_box, image_dimensions=image_dims)
