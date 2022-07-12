@@ -38,8 +38,8 @@ def room_page(room_id):
         orig_ratio = float(orig_height) / float(orig_width)
         new_width = 1000
         new_height = floor(1000 * orig_ratio)
-        width_ratio = new_width / orig_width
-        height_ratio = new_height / orig_height
+        width_ratio = float(new_width) / float(orig_width)
+        height_ratio = float(new_height) / float(orig_height)
     if room.get("image_coords"):
         room_box["x"] = floor(width_ratio * room["image_coords"][0])
         room_box["y"] = floor(height_ratio * room["image_coords"][1])
