@@ -53,4 +53,5 @@ def room_page(room_id):
         room_box["height"] = box_height
     if not room:
         return "Room not found"
-    return render_template("room.html", room=room, room_box=room_box)
+    image_dims = {'width': new_width, 'height': new_height}
+    return render_template("room.html", room=room, room_box=room_box, image_dimensions=image_dims)
