@@ -26,7 +26,7 @@ def root():
 @app.route("/u<int:room_id>")
 def room_page(room_id):
     room_box = {"x": 0, "y": 0, "width": 0, "height": 0}
-    is_uid = re.search("u[0-9]+$", room_id)
+    is_uid = re.search("u[0-9]+$", f'{room_id}')
     if is_uid:
         room_id = f'u{room_id}'
     room = rd_dict.get(room_id)
@@ -37,9 +37,9 @@ def room_page(room_id):
             orig_width, orig_height = img.size
         orig_ratio = float(orig_width) / float(orig_height)
         new_width = 1000
-        new_heigh = floor(1000 * orig_ratio)
+        new_height = floor(1000 * orig_ratio)
         width_ratio = new_width / orig_width
-        heigh_ratio = new_height / orig_height
+        height_ratio = new_height / orig_height
     if room.get("image_coords"):
         room_box["x"] = floor(width_ratio * room["image_coords"][0])
         room_box["y"] = floor(height_ratio * room["image_coords"][1])
