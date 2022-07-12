@@ -10,6 +10,7 @@ app = Flask(__name__)
 with open("app/data/map.json", "r") as f:
     room_data = json.load(f)
 
+rd_dict = {}
 for room in room_data:
     rd_dict[room["id"]] = room
     rd_dict["u" + room["id"][0]] = room
