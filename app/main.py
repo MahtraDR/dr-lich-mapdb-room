@@ -26,7 +26,7 @@ def root():
 @app.route("/u<int:room_id>")
 def room_page(room_id):
     room_box = {"x": 0, "y": 0, "width": 0, "height": 0}
-    is_uid = re.search("u[0-9]+$", f'{room_id}')
+    is_uid = re.search("u[0-9]+\?$", request.full_path)
     if is_uid:
         room_id = f'u{room_id}'
     room = rd_dict.get(room_id)
