@@ -13,7 +13,8 @@ with open("app/data/map.json", "r") as f:
 rd_dict = {}
 for room in room_data:
     rd_dict[room["id"]] = room
-    rd_dict[f'u{room["uid"][0]}'] = room
+    if room.get("uid"):
+        rd_dict[f'u{room["uid"][0]}'] = room
 
 
 @app.route("/")
