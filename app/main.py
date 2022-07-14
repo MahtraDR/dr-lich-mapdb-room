@@ -17,9 +17,24 @@ for room in room_data:
         rd_dict[f'u{room["uid"][0]}'] = room
 
 
+@app.errorhandler(404)
+def not_found(e):
+    return help()
+
+
 @app.route("/")
 def root():
-    return f"hey, go to #{request.base_url}/<room id> to view a room"
+    return help()
+
+
+def help():
+    resp = [
+        f"hey, go to {request.url_root}[room id] to view a room",
+        f"Like:",
+        f'<a href="{request.url_root}228">{request.url_root}228</a>',
+        f'<a href="{request.url_root}u13100042">{request.url_root}u13100042</a>',
+    ]
+    return "<br>".join(resp)
 
 
 @app.route("/<int:room_id>")
@@ -28,7 +43,7 @@ def room_page(room_id):
     room_box = {"x": 0, "y": 0, "width": 0, "height": 0}
     is_uid = re.search("u[0-9]+\?$", request.full_path)
     if is_uid:
-        room_id = f'u{room_id}'
+        room_id = f"u{room_id}"
     room = rd_dict.get(room_id)
     if not room:
         return "Room not found"
@@ -54,5 +69,7 @@ def room_page(room_id):
         )
         room_box["width"] = box_width
         room_box["height"] = box_height
-    image_dims = {'width': new_width, 'height': new_height}
-    return render_template("room.html", room=room, room_box=room_box, image_dimensions=image_dims)
+    image_dims = {"width": new_width, "height": new_height}
+    return render_template(
+        "room.html", room=room, room_box=room_box, image_dimensions=image_dims
+    )
