@@ -19,22 +19,12 @@ for room in room_data:
 
 @app.errorhandler(404)
 def not_found(e):
-    return help()
+    return render_template("404.html")
 
 
 @app.route("/")
 def root():
-    return help()
-
-
-def help():
-    resp = [
-        f"hey, go to {request.url_root}[room id] to view a room",
-        f"Like:",
-        f'<a href="{request.url_root}228">{request.url_root}228</a>',
-        f'<a href="{request.url_root}u13100042">{request.url_root}u13100042</a>',
-    ]
-    return "<br>".join(resp)
+    return render_template("404.html")
 
 
 @app.route("/<int:room_id>")
@@ -46,7 +36,7 @@ def room_page(room_id):
         room_id = f"u{room_id}"
     room = rd_dict.get(room_id)
     if not room:
-        return "Room not found"
+        return render_template("404.html", noroom=True)
     orig_ratio = 1
     size_mod = 1
     new_width = new_height = False
