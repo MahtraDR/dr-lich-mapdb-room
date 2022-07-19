@@ -54,8 +54,8 @@ def room_page(room_id):
         with Image.open("app/static/maps/" + room["image"]) as img:
             orig_width, orig_height = img.size
         orig_ratio = float(orig_height) / float(orig_width)
-        new_width = 1000
-        new_height = floor(1000 * orig_ratio)
+        new_width = 700
+        new_height = floor(700 * orig_ratio)
         width_ratio = float(new_width) / float(orig_width)
         height_ratio = float(new_height) / float(orig_height)
     if room.get("image_coords"):
