@@ -2,6 +2,7 @@
     <head>
             <title>{{ room.title[0] }} - Lich: {{ room.id }} - UID: {{ room.uid | first }}</title>
             <link rel="stylesheet" href="static/css/pico.min.css">
+            <link rel="stylesheet" href="static/css/prism.css">
             <style>
                 .highlight_box {
                     padding: 0;
@@ -44,6 +45,7 @@
             </style>
     </head>
     <body>
+        <script src="static/js/prism.js"></script>
         <div id="header">
                 <h3>{{ room.title[0] }} - Lich: {{ room.id }} - UID: u{{ room.uid | first }}</h3>
         </div>
@@ -97,7 +99,7 @@
                 <div style="clear:both;">
                     <details style="width:50%;">
                         <summary>Full Room Info</summary>
-                        <article><pre style="padding:5;white-space: pre-wrap;">{{ room_json_pretty }}</pre></article>
+                        <article><code style="white-space: pre-wrap;font-size:10px" class="language-json">{{ room_json_pretty }}</code></article>
                     </details>
                 </div>
             </div>
