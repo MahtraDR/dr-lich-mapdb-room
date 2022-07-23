@@ -60,6 +60,7 @@ def room_page(room_id):
         room_box["width"] = box_width
         room_box["height"] = box_height
     image_dims = {"width": new_width, "height": new_height}
+    room_json_pretty = json.dumps(room, indent=4, sort_keys=True)
     return render_template(
-        "room.html", room=room, room_box=room_box, image_dimensions=image_dims
+        "room.html", room=room, room_box=room_box, image_dimensions=image_dims, room_json_pretty=room_json_pretty
     )
