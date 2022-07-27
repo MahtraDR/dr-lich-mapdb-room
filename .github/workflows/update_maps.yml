@@ -24,6 +24,8 @@ jobs:
 
       - name: Run update_map.rb
         run: bundle exec ruby util/update_map.rb
+        env:
+          GAMECODE: ${{ secrets.GAMECODE }}
 
       - name: Commit changes
         continue-on-error: true
