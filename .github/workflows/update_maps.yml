@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  mirror:
+  update-maps:
     runs-on: ubuntu-20.04
     timeout-minutes: 3
     steps:
@@ -22,8 +22,8 @@ jobs:
           ruby-version: '2.7'
           bundler-cache: true
 
-      - name: Run update_maps.rb
-        run: bundle exec ruby util/update_maps.rb
+      - name: Run update_map.rb
+        run: bundle exec ruby util/update_map.rb
 
       - name: Commit changes
         continue-on-error: true
