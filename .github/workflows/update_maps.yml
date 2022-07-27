@@ -1,0 +1,41 @@
+name: Update maps
+on:
+  schedule:
+    - cron: '42 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 3
+    steps:
+      - name: Checkout configuration
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          submodules: true
+
+      - name: Setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+          bundler-cache: true
+
+      - name: Run update_maps.rb
+        run: bundle exec ruby util/update_maps.rb
+
+      - name: Commit changes
+        continue-on-error: true
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add app/data/map.json
+          git add app/static/maps
+          if (git status --porcelain | wc -l | grep 0 > /dev/null);then echo "No changes to commit";else git commit -m "Daily automatic map update";fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
