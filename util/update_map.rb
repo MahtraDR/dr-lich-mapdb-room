@@ -154,7 +154,7 @@ download_mapdb = proc { |xmldata|
         echo "error: unsupported compression method: #{response['compression']}"
       else
         response['size'] = response['size'].to_i
-        tempfilename = "#{temp_dir}#{rand(100000000)}.repo"
+        tempfilename = "#{temp_dir}/#{rand(100000000)}.repo"
         if response['timestamp'] and response['uploaded by']
           echo "downloading map database... (uploaded by #{response['uploaded by']} at #{Time.at(response['timestamp'].to_i)})"
         else
@@ -165,7 +165,7 @@ download_mapdb = proc { |xmldata|
           f.write(ssl_socket.read(response['size'] % 1_000_000)) unless (response['size'] % 1_000_000) == 0
         }
         if response['compression'] == 'gzip'
-          ungzipname = "#{temp_dir}#{rand(100000000)}"
+          ungzipname = "#{temp_dir}/#{rand(100000000)}"
           File.open(ungzipname, 'wb') { |f|
             Zlib::GzipReader.open(tempfilename) { |f_gz|
               while data = f_gz.read(1_000_000)
@@ -240,7 +240,7 @@ download_mapdb = proc { |xmldata|
               break
             end
             response['size'] = response['size'].to_i
-            tempfilename = "#{temp_dir}#{rand(100000000)}.repo"
+            tempfilename = "#{temp_dir}/#{rand(100000000)}.repo"
             echo "downloading #{response['file']}..."
             File.open(tempfilename, 'wb') { |f|
               (response['size'] / 1_000_000).times { f.write(ssl_socket.read(1_000_000)) }
