@@ -33,6 +33,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add app/data/map.json
+          git add app/data/updated_at
           git add app/static/maps
           if (git status --porcelain | wc -l | grep 0 > /dev/null);then echo "No changes to commit";else git commit -m "Daily automatic map update";fi
 
