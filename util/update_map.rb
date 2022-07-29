@@ -37,6 +37,7 @@ temp_dir = Dir.tmpdir()
 work_dir = ENV['GITHUB_WORKSPACE']
 map_images_dir = "#{work_dir}/app/static/maps"
 data_dir = "#{work_dir}/app/data"
+updated_at_file = "#{work_dir}/app/data/updated_at"
 
 class MockXMLData
     attr_accessor :game
@@ -206,6 +207,10 @@ download_mapdb = proc { |xmldata|
           failed = false
           downloaded = true
         end
+        updated_timestamp = Time.at(response['timestamp'].to_i)
+        File.open(updated_at_file, 'w') { |file|
+          file.write(updated_timestamp)
+        }
       end
     ensure
       ssl_socket.close rescue nil

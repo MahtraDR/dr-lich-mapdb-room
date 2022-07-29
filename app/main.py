@@ -16,6 +16,9 @@ for room in room_data:
     if room.get("uid"):
         rd_dict[f'u{room["uid"][0]}'] = room
 
+with open("app/data/updated_at", "r") as f:
+    updated_at = f.read()
+
 
 @app.errorhandler(404)
 def not_found(e):
@@ -62,5 +65,10 @@ def room_page(room_id):
     image_dims = {"width": new_width, "height": new_height}
     room_json_pretty = json.dumps(room, indent=4, sort_keys=True)
     return render_template(
-        "room.html", room=room, room_box=room_box, image_dimensions=image_dims, room_json_pretty=room_json_pretty
+        "room.html",
+        room=room,
+        room_box=room_box,
+        image_dimensions=image_dims,
+        room_json_pretty=room_json_pretty,
+        updated_at=updated_at,
     )
