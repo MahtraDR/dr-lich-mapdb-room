@@ -1,0 +1,95 @@
+.highlight_box {
+    padding: 0;
+    position: absolute;
+    border: 2px;
+    border-style: solid;
+    border-color: green;
+    animation: animationFrames 5s infinite;
+    z-index: 9;
+}
+
+#mapimage {
+    max-width: 1000;
+    z-index: 1;
+    position: relative;
+}
+#mapimage:hover {
+    -webkit-filter: opacity(20%);
+    -moz-filter: opacity(20%);
+    -o-filter: opacity(20%);
+    -ms-filter: opacity(20%);
+    filter: opacity(20%);
+}
+@keyframes animationFrames {
+    50% {
+        border-color: green;
+        background-color: palevioletred;
+    }
+}
+
+#image_wrapper {
+    padding: 25;
+    position: relative;
+}
+
+#image_div { 
+    padding: 0;
+}
+
+#after_image {
+    padding: 0;
+}
+
+.after_table_divs {
+    padding-bottom: 0;
+    padding-top: 0;
+    padding-left: 25;
+    padding-right: 25;
+}
+
+.after_tables {
+    width: 50%;
+    border: 2px solid;
+}
+
+#exit_table {
+    width: 20%;
+}
+
+table tr th {
+    text-align: left;
+    border: 1px solid;
+    border-top: 5px solid;
+}
+
+table tr td {
+    text-align: left;
+    border: 1px solid;
+}
+
+h3 {
+    padding: 0;
+    margin: 0;
+}
+
+#full_info_div {
+    padding-left: 25;
+}
+
+#full_info_details {
+    width: 50%;
+}
+
+#full_info_code {
+    white-space: pre-wrap;
+    font-size: 10px;
+}
+
+#updated_at {
+    padding: 0;
+    margin: 25;
+}
+
+#header {
+	padding: 25;
+}
