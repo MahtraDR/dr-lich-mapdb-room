@@ -34,29 +34,30 @@
             <div id=desc_table_div class=after_table_divs>
                 <table id=desc_table class=after_tables>
                     <tr>
-                        <td colspan=2>{{ room.description[0] }}</td>
+                        <td colspan=10>{{ room.description[0] }}</td>
                     </tr>
                     <tr>
-                        <td colspan=2>{{ room.paths[0] }}</td>
+                        <td colspan=10>{{ room.paths[0] }}</td>
                     </tr>
                     <tr>
-                        <td colspan=2>Map: {{ room.image }}</td>
+                        <td colspan=10>Map: {{ room.image }}</td>
                     </tr>
+                    <tr><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"><td bgcolor="#bbc6ce"></tr>
                     <tr>
-                        <th>
-                            Connecting Room
+                        <th colspan=9>
+                            Exit
                         </th>
                         <th>
-                            Exit
+                            Connecting Room
                         </th>
                     </tr>
                 {% for room_exit, room_way in room.wayto.items() %}
                     <tr>
-                        <td>
-                            <a href="{{ room_exit }}">{{ room_exit }}
+                        <td colspan=9>
+                            {{ room_way }}
                         </td>
                         <td>
-                            {{ room_way }}
+                            <a href="{{ room_exit }}">{{ room_exit }}
                         </td>
                     </tr>
                 {% endfor %}
