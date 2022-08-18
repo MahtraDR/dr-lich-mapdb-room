@@ -13,8 +13,10 @@ with open("app/data/map.json", "r") as f:
 rd_dict = {}
 for room in room_data:
     rd_dict[room["id"]] = room
-    if room.get("uid"):
-        rd_dict[f'u{room["uid"][0]}'] = room
+    room_uids = room.get("uid")
+    if room_uids and type(room_uids) == list:
+        for room_uid in room_uids:
+            rd_dict[f'u{room_uid}'] = room
 
 with open("app/data/updated_at", "r") as f:
     updated_at = f.read()
