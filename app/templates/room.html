@@ -37,7 +37,7 @@
                         <td colspan=10>{{ room.description[0] }}</td>
                     </tr>
                     <tr>
-                        <td colspan=10>{{ room.paths[0] }}</td>
+                        <td colspan=10>{{ (room.paths | default(["Obvious paths: none"]))[0] }}</td>
                     </tr>
                     <tr>
                         <td colspan=10>Map: {{ room.image }}</td>
