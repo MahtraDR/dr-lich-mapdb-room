@@ -3,7 +3,7 @@
         <style>
             div { padding:10}
         </style>
-        <title>lich map room db - try again</title>
+        <title>Lich map room DB</title>
         <link rel="stylesheet" href="static/css/pico.min.css">
     </head>
     <body>
@@ -15,5 +15,6 @@
             <div>Like:
             <div><a href="{{ request.host_url }}228">{{ request.host_url }}228</a><br><a href="{{ request.host_url }}u13100042">{{ request.host_url }}u13100042</a></div>
         </div>
+        {% with results=None, overflow=False %} {% include "search_block.html" %} {% endwith %}
     </body>
 </html>

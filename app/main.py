@@ -1,11 +1,17 @@
 from flask import Flask
-from flask import render_template, url_for, request
+from flask import render_template, url_for, request, redirect
 from PIL import Image
 from math import floor
 import re
 import json
+from os import environ as osenv
 
 app = Flask(__name__)
+try:
+	app.config['SECRET_KEY'] = osenv.get('FLASK_SECRET_KEY')
+except KeyError:
+	from os import secrets
+	app.config['SECRET_KEY'] = secrets.token_hex(16)
 
 with open("app/data/map.json", "r") as f:
     room_data = json.load(f)
@@ -32,13 +38,13 @@ def root():
     return render_template("404.html")
 
 
+@app.route("/u<int:simu_id>")
 @app.route("/<int:room_id>")
-@app.route("/u<int:room_id>")
-def room_page(room_id):
+def room_page(room_id = None, simu_id = None):
     room_box = {"x": 0, "y": 0, "width": 0, "height": 0}
     is_uid = re.search("u[0-9]+\?$", request.full_path)
     if is_uid:
-        room_id = f"u{room_id}"
+        room_id = f"u{simu_id}"
     room = rd_dict.get(room_id)
     if not room:
         return render_template("404.html", noroom=True)
@@ -74,3 +80,42 @@ def room_page(room_id):
         room_json_pretty=room_json_pretty,
         updated_at=updated_at,
     )
+
+@app.route("/search", methods=('GET', 'POST'))
+def search():
+	if request.method == 'POST':
+		search = request.form['search'].strip().lower()
+		overflow = False
+		try:
+			room = rd_dict.get(int(search))
+			return redirect(url_for('room_page', room_id=search))
+		except ValueError:
+			room = rd_dict.get(search)
+			if room:
+				return redirect(url_for('room_page', simu_id=search.replace("u", "")))
+		room_list = {}
+		for rid, rinfo in rd_dict.items():
+			if search in rinfo.get('tags', []):
+				room_list[rinfo['id']] = rinfo
+		if not room_list:
+			for rid, rinfo in rd_dict.items():
+				if len(room_list) >= 100:
+					overflow = True
+					break
+				for title in rinfo.get('title', {}):
+					title_check = re.search(search, title, re.IGNORECASE)
+					if title_check:
+						room_list[rinfo['id']] = rinfo
+						break
+				if room_list.get(rinfo['id']):
+					continue
+				for desc in rinfo.get('description', {}):
+					desc_check = re.search(search, desc, re.IGNORECASE)
+					if desc_check:
+						room_list[rinfo['id']] = rinfo
+						break
+		if len(room_list) == 1:
+			return redirect(url_for('room_page', room_id=list(room_list.keys())[0]))
+		return render_template('search.html', results=room_list, overflow=overflow)
+	else:
+		return render_template('search.html', results=None, overflow=False)

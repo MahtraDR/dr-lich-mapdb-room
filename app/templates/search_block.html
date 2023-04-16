@@ -1,0 +1,24 @@
+<div style="max-width: 600px;padding: 10px;">
+    <form method="post" action="/search">
+        <label for="search">Room Lich ID, Simu ID, or any search criteria<br>You may search using tags, room titles, or descriptions.</label>
+        <br>
+        <input type="text" name="search"
+               placeholder="Room Lich ID, Simu ID, or any search criteria"
+               value="{{ request.form['search'] }}"></input>
+        <br>
+        <button type="submit">Search</button>
+    </form>
+    {% if not results and results != None %}
+    <div><h3>No rooms found, check your search and try again.</h3></div>
+    {% endif %}
+    {% if overflow %}
+    <div><h3>You matched a lot of results, only returning the first 100. Try narrowing your search</h3></div>
+    {% endif %}
+    {% if results %}
+    <div>
+    {% for rid, rinfo in results.items() -%}
+    <br><a href="{{ url_for('room_page', room_id=rid) }}">{{ rid }} - {{ rinfo.get('uid', ['None'])[0] }} - {{ rinfo['title'][0] }}</a><br>
+    {% endfor %}
+    {% endif %}
+    </div>
+</div>

@@ -34,7 +34,7 @@
             <div id=desc_table_div class=after_table_divs>
                 <table id=desc_table class=after_tables>
                     <tr>
-                        <td colspan=10>{{ room.description[0] }}</td>
+                        <td colspan=10>{{ (room.description | default(["None"]))[0] }}</td>
                     </tr>
                     <tr>
                         <td colspan=10>{{ (room.paths | default(["Obvious paths: none"]))[0] }}</td>
@@ -71,6 +71,7 @@
                     </article>
                 </details>
             </div>
+            {% with results=None, overflow=False %} {% include "search_block.html" %} {% endwith %}
             <div id=updated_at>
                 <small><i>MapDB last updated: {{ updated_at }}</i></small>
             </div>
