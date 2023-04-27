@@ -94,25 +94,27 @@ def search():
 			if room:
 				return redirect(url_for('room_page', simu_id=search.replace("u", "")))
 		room_list = {}
-		for rid, rinfo in rd_dict.items():
+		for rinfo in room_info:
+			rid = rinfo.get("id", "wut")
 			if search in rinfo.get('tags', []):
-				room_list[rinfo['id']] = rinfo
+				room_list[rid] = rinfo
 		if not room_list:
-			for rid, rinfo in rd_dict.items():
+			for rinfo in room_data:
+				rid = rinfo.get('id', "wut")
 				if len(room_list) >= 100:
 					overflow = True
 					break
 				for title in rinfo.get('title', {}):
 					title_check = re.search(search, title, re.IGNORECASE)
 					if title_check:
-						room_list[rinfo['id']] = rinfo
+						room_list[rid] = rinfo
 						break
-				if room_list.get(rinfo['id']):
+				if room_list.get(rid):
 					continue
 				for desc in rinfo.get('description', {}):
 					desc_check = re.search(search, desc, re.IGNORECASE)
 					if desc_check:
-						room_list[rinfo['id']] = rinfo
+						room_list[rid] = rinfo
 						break
 		if len(room_list) == 1:
 			return redirect(url_for('room_page', room_id=list(room_list.keys())[0]))
