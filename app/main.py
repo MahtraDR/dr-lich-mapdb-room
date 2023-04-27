@@ -94,7 +94,7 @@ def search():
 			if room:
 				return redirect(url_for('room_page', simu_id=search.replace("u", "")))
 		room_list = {}
-		for rinfo in room_info:
+		for rinfo in room_data:
 			rid = rinfo.get("id", "wut")
 			if search in rinfo.get('tags', []):
 				room_list[rid] = rinfo
