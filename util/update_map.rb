@@ -53,13 +53,15 @@ end
 
 connect = proc {
     begin
+      verify_mode = nil
       if ca_cert.not_before > Time.now
-        respond "\n---\n--- warning: The current date is set incorrectly on your computer. This will\n---          cause the SSL certificate verification to fail and prevent this\n---          script from connecting to the server.  Fix it.\n---\n\n"
-        sleep 3
-      end
-      if ca_cert.not_after < Time.now
-        respond "\n---\n--- warning: Your computer thinks the date is #{Time.now.strftime("%m-%d-%Y")}.  If this is the\n---          correct date, you need an updated version of this script.  If \n---          this is not the correct date, you need to change it.  In either\n---          case, this date makes the SSL certificate in this script invalid\n---          and will prevent the script from connecting to the server.\n---\n\n"
-        sleep 3
+        echo("Cert is not valid yet") unless verify_mode
+        verify_mode = OpenSSL::SSL::VERIFY_NONE
+      elsif ca_cert.not_after < Time.now
+        echo("Cert is expired") unless verify_mode
+        verify_mode = OpenSSL::SSL::VERIFY_NONE
+      else
+        verify_mode = OpenSSL::SSL::VERIFY_PEER
       end
       cert_store              = OpenSSL::X509::Store.new
       cert_store.add_cert(ca_cert)
@@ -70,7 +72,7 @@ connect = proc {
         # the plat_updater script redefines OpenSSL::SSL::VERIFY_PEER, disabling it for everyone
         ssl_context.verify_mode = 1 # probably right
       else
-        ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        ssl_context.verify_mode = verify_mode
       end
       socket                  = TCPSocket.new(hostname, port)
       ssl_socket              = OpenSSL::SSL::SSLSocket.new(socket, ssl_context)
