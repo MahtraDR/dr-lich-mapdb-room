@@ -21,19 +21,19 @@
         <script src="static/js/prism.js"></script>
         <div id="header">
                 <h3>{{ room.title[0] }} - Lich: {{ room.id }} - UID: u{{ room.uid | first }}</h3>
+                {% if room.image and image_tags %}
+                <div id="tag_selector">
+                    <label for="tag_dropdown">Highlight rooms with tag:</label>
+                    <select id="tag_dropdown" onchange="highlightTaggedRooms()">
+                        <option value="">Select a tag...</option>
+                        {% for tag in image_tags %}
+                        <option value="{{ tag }}">{{ tag }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
         </div>
         {% if room.image %}
-        {% if image_tags %}
-        <div id="tag_selector">
-            <label for="tag_dropdown">Highlight rooms with tag:</label>
-            <select id="tag_dropdown" onchange="highlightTaggedRooms()">
-                <option value="">Select a tag...</option>
-                {% for tag in image_tags %}
-                <option value="{{ tag }}">{{ tag }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        {% endif %}
         <div id="image_wrapper">
             <div id="highlight_box" class="highlight_box">
                 <!-- drawing highlight box-->
@@ -121,11 +121,9 @@
                         const highlightBox = document.createElement('div');
                         highlightBox.className = 'tag_highlight_box';
                         highlightBox.style.position = 'absolute';
-                        highlightBox.style.border = '2px solid blue';
-                        highlightBox.style.backgroundColor = 'rgba(0, 0, 255, 0.2)';
                         highlightBox.style.zIndex = '8';
-                        highlightBox.style.left = Math.floor(widthRatio * room.image_coords[0]) + 'px';
-                        highlightBox.style.top = Math.floor(heightRatio * room.image_coords[1]) + 'px';
+                        highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25) + 'px';
+                        highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 25) + 'px';
                         highlightBox.style.width = (Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0])) + 'px';
                         highlightBox.style.height = (Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1])) + 'px';
                         highlightBox.title = `Room ${room.id}: ${room.title[0]}`;
