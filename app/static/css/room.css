@@ -113,7 +113,7 @@ h3 {
 }
 
 #header {
-	padding: 25px 25px 1px 25px;
+	padding: 2px 25px 1px 25px;
 }
 
 #title_row {
@@ -173,7 +173,7 @@ h3 {
 
 #map_navigation {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
 }
 
 #map_dropdown {
@@ -183,7 +183,8 @@ h3 {
     border-radius: 3px;
     max-width: 200px;
     line-height: 1.2;
-    margin-top: 1px;
+    margin-top: auto;
+    margin-bottom: 0;
 }
 
 #map_dropdown optgroup {
@@ -197,7 +198,7 @@ h3 {
 #map_dropdown option {
     font-weight: normal;
     font-size: 11px !important;
-    color: inherit;
+    color: hsl(205deg, 16%, 77%) !important;
 }
 
 #mapimage.opacity_active {
