@@ -30,6 +30,10 @@
                         <option value="{{ tag }}">{{ tag }}</option>
                         {% endfor %}
                     </select>
+                    <div id="opacity_toggle">
+                        <input type="checkbox" id="opacity_checkbox" onchange="toggleOpacity()">
+                        <label for="opacity_checkbox">Apply opacity for mobile</label>
+                    </div>
                 </div>
                 {% endif %}
         </div>
@@ -131,6 +135,17 @@
                         document.getElementById('image_wrapper').appendChild(highlightBox);
                     }
                 });
+            }
+            
+            function toggleOpacity() {
+                const mapImage = document.getElementById('mapimage');
+                const checkbox = document.getElementById('opacity_checkbox');
+                
+                if (checkbox.checked) {
+                    mapImage.classList.add('opacity_active');
+                } else {
+                    mapImage.classList.remove('opacity_active');
+                }
             }
         </script>
     </body>
