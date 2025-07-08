@@ -117,20 +117,22 @@ h3 {
 }
 
 #tag_selector {
-    padding-top: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 8px;
 }
 
 #tag_selector label {
-    margin-right: 10px;
+    margin-right: 5px;
     font-weight: bold;
+    font-size: 13px;
 }
 
 #tag_dropdown {
-    padding: 5px;
-    font-size: 14px;
+    padding: 3px 5px;
+    font-size: 12px;
     border: 1px solid #ccc;
     border-radius: 3px;
     max-width: fit-content;
@@ -139,11 +141,17 @@ h3 {
 #opacity_toggle {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
 }
 
 #opacity_toggle input {
     margin: 0;
+    transform: scale(0.8);
+}
+
+#opacity_toggle label {
+    font-size: 12px;
+    font-weight: normal;
 }
 
 #mapimage.opacity_active {
