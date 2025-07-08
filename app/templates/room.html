@@ -57,10 +57,33 @@
                         <option value="{{ location }}">{{ location }}</option>
                         {% endfor %}
                     </select>
+                    <span id="help_icon" onclick="showHelpPopup()">?</span>
                 </div>
                 {% endif %}
         </div>
         {% if room.image %}
+        <div id="help_popup" style="display: none;">
+            <div id="help_popup_content">
+                <span id="help_close" onclick="hideHelpPopup()">×</span>
+                <h4>Room Highlight Examples</h4>
+                <div class="help_example">
+                    <div class="help_highlight highlight_box_example"></div>
+                    <span>Current room</span>
+                </div>
+                <div class="help_example">
+                    <div class="help_highlight tag_highlight_box_example"></div>
+                    <span>Tag highlight</span>
+                </div>
+                <div class="help_example">
+                    <div class="help_highlight location_highlight_box_example"></div>
+                    <span>Location highlight</span>
+                </div>
+                <div class="help_example">
+                    <div class="help_highlight both_highlight_box_example"></div>
+                    <span>Tag + location highlight</span>
+                </div>
+            </div>
+        </div>
         <div id="image_wrapper">
             <div id="highlight_box" class="highlight_box">
                 <!-- drawing highlight box-->
@@ -202,6 +225,26 @@
                     window.location.href = '/' + selectedRoomId;
                 }
             }
+            
+            function showHelpPopup() {
+                document.getElementById('help_popup').style.display = 'flex';
+            }
+            
+            function hideHelpPopup() {
+                document.getElementById('help_popup').style.display = 'none';
+            }
+            
+            // Hide popup when clicking outside
+            document.addEventListener('click', function(event) {
+                const popup = document.getElementById('help_popup');
+                const helpIcon = document.getElementById('help_icon');
+                
+                if (popup && popup.style.display === 'flex' && 
+                    !popup.contains(event.target) && 
+                    event.target !== helpIcon) {
+                    hideHelpPopup();
+                }
+            });
         </script>
     </body>
 </html>
