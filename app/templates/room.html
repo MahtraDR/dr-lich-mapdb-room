@@ -20,20 +20,31 @@
     <body>
         <script src="static/js/prism.js"></script>
         <div id="header">
-                <h3>{{ room.title[0] }} - Lich: {{ room.id }} - UID: u{{ room.uid | first }}</h3>
+                <div id="title_row">
+                    <h3>{{ room.title[0] }} - Lich: {{ room.id }} - UID: u{{ room.uid | first }}</h3>
+                    {% if room.image %}
+                    <div id="opacity_toggle">
+                        <input type="checkbox" id="opacity_checkbox" onchange="toggleOpacity()">
+                        <label for="opacity_checkbox">Toggle opacity</label>
+                    </div>
+                    {% endif %}
+                </div>
                 {% if room.image and image_tags %}
                 <div id="tag_selector">
-                    <label for="tag_dropdown">Highlight rooms with tag:</label>
-                    <select id="tag_dropdown" onchange="highlightTaggedRooms()">
+                    <label for="tag_dropdown">Highlight tag:</label>
+                    <select id="tag_dropdown" onchange="highlightRooms()">
                         <option value="">Select a tag...</option>
                         {% for tag in image_tags %}
                         <option value="{{ tag }}">{{ tag }}</option>
                         {% endfor %}
                     </select>
-                    <div id="opacity_toggle">
-                        <input type="checkbox" id="opacity_checkbox" onchange="toggleOpacity()">
-                        <label for="opacity_checkbox">Toggle map opacity</label>
-                    </div>
+                    <label for="location_dropdown">Highlight location:</label>
+                    <select id="location_dropdown" onchange="highlightRooms()">
+                        <option value="">Select a location...</option>
+                        {% for location in image_locations %}
+                        <option value="{{ location }}">{{ location }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 {% endif %}
         </div>
@@ -97,56 +108,65 @@
             const sameImageRooms = {{ same_image_rooms | tojson }};
             const currentImageDimensions = {{ image_dimensions | tojson }};
             
-            function highlightTaggedRooms() {
+            function highlightRooms() {
                 const selectedTag = document.getElementById('tag_dropdown').value;
+                const selectedLocation = document.getElementById('location_dropdown').value;
                 
-                // Remove existing tag highlights
-                const existingHighlights = document.querySelectorAll('.tag_highlight_box');
+                // Remove existing highlight boxes
+                const existingHighlights = document.querySelectorAll('.tag_highlight_box, .location_highlight_box, .both_highlight_box');
                 existingHighlights.forEach(box => box.remove());
                 
-                if (!selectedTag) return;
+                if (!selectedTag && !selectedLocation) return;
                 
-                // Find rooms with the selected tag
-                const taggedRooms = sameImageRooms.filter(room => 
-                    room.tags && room.tags.includes(selectedTag)
-                );
+                // Get the original image dimensions
+                const imgElement = document.getElementById('mapimage');
+                const origWidth = imgElement.naturalWidth;
+                const origHeight = imgElement.naturalHeight;
                 
-                // Create highlight boxes for tagged rooms
-                taggedRooms.forEach(room => {
+                const widthRatio = currentImageDimensions.width / origWidth;
+                const heightRatio = currentImageDimensions.height / origHeight;
+                
+                // Process each room
+                sameImageRooms.forEach(room => {
                     if (room.image_coords) {
-                        // Get the original image dimensions from the first room on this image
-                        const imgElement = document.getElementById('mapimage');
-                        const origWidth = imgElement.naturalWidth;
-                        const origHeight = imgElement.naturalHeight;
+                        const hasTag = selectedTag && room.tags && room.tags.includes(selectedTag);
+                        const hasLocation = selectedLocation && room.location === selectedLocation;
                         
-                        const widthRatio = currentImageDimensions.width / origWidth;
-                        const heightRatio = currentImageDimensions.height / origHeight;
-                        
-                        const highlightBox = document.createElement('div');
-                        highlightBox.className = 'tag_highlight_box';
-                        highlightBox.style.position = 'absolute';
-                        highlightBox.style.zIndex = '8';
-                        
-                        // Calculate original dimensions
-                        const originalWidth = Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0]);
-                        const originalHeight = Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1]);
-                        
-                        // Apply minimum dimensions while maintaining center point
-                        const minSize = 10;
-                        const finalWidth = Math.max(originalWidth, minSize);
-                        const finalHeight = Math.max(originalHeight, minSize);
-                        
-                        // Calculate position adjustment to maintain center
-                        const widthAdjustment = (finalWidth - originalWidth) / 2;
-                        const heightAdjustment = (finalHeight - originalHeight) / 2;
-                        
-                        highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25 - widthAdjustment) + 'px';
-                        highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 1 - heightAdjustment) + 'px';
-                        highlightBox.style.width = finalWidth + 'px';
-                        highlightBox.style.height = finalHeight + 'px';
-                        highlightBox.title = `Room ${room.id}: ${room.title[0]}`;
-                        
-                        document.getElementById('image_wrapper').appendChild(highlightBox);
+                        if (hasTag || hasLocation) {
+                            const highlightBox = document.createElement('div');
+                            highlightBox.style.position = 'absolute';
+                            highlightBox.style.zIndex = '8';
+                            
+                            // Determine highlight type and class
+                            if (hasTag && hasLocation) {
+                                highlightBox.className = 'both_highlight_box';
+                            } else if (hasTag) {
+                                highlightBox.className = 'tag_highlight_box';
+                            } else {
+                                highlightBox.className = 'location_highlight_box';
+                            }
+                            
+                            // Calculate original dimensions
+                            const originalWidth = Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0]);
+                            const originalHeight = Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1]);
+                            
+                            // Apply minimum dimensions while maintaining center point
+                            const minSize = 10;
+                            const finalWidth = Math.max(originalWidth, minSize);
+                            const finalHeight = Math.max(originalHeight, minSize);
+                            
+                            // Calculate position adjustment to maintain center
+                            const widthAdjustment = (finalWidth - originalWidth) / 2;
+                            const heightAdjustment = (finalHeight - originalHeight) / 2;
+                            
+                            highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25 - widthAdjustment) + 'px';
+                            highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 1 - heightAdjustment) + 'px';
+                            highlightBox.style.width = finalWidth + 'px';
+                            highlightBox.style.height = finalHeight + 'px';
+                            highlightBox.title = `Room ${room.id}: ${room.title[0]}`;
+                            
+                            document.getElementById('image_wrapper').appendChild(highlightBox);
+                        }
                     }
                 });
             }

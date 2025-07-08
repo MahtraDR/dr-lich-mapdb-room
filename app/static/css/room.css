@@ -116,6 +116,18 @@ h3 {
 	padding: 25px 25px 1px 25px;
 }
 
+#title_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+#title_row h3 {
+    margin: 0;
+    flex-grow: 1;
+}
+
 #tag_selector {
     padding-top: 5px;
     padding-bottom: 5px;
@@ -131,7 +143,8 @@ h3 {
     line-height: 1;
 }
 
-#tag_dropdown {
+#tag_dropdown,
+#location_dropdown {
     padding: 3px 5px;
     font-size: 12px;
     border: 1px solid #ccc;
@@ -143,18 +156,17 @@ h3 {
 
 #opacity_toggle {
     display: flex;
-    align-items: baseline;
-    gap: 3px;
+    align-items: center;
+    gap: 2px;
 }
 
 #opacity_toggle input {
     margin: 0;
-    transform: scale(0.8);
-    vertical-align: baseline;
+    transform: scale(0.7);
 }
 
 #opacity_toggle label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: normal;
     line-height: 1;
 }
@@ -168,13 +180,16 @@ h3 {
 }
 
 .highlight_box,
-.tag_highlight_box {
+.tag_highlight_box,
+.location_highlight_box,
+.both_highlight_box {
     opacity: 1 !important;
     -webkit-filter: none !important;
     -moz-filter: none !important;
     -o-filter: none !important;
     -ms-filter: none !important;
     filter: none !important;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .tag_highlight_box {
@@ -199,4 +214,52 @@ h3 {
 
 .tag_highlight_box::after {
     background: linear-gradient(-45deg, transparent 46%, blue 46%, blue 54%, transparent 54%);
+}
+
+.location_highlight_box {
+    pointer-events: none;
+    box-sizing: border-box;
+    border: 2px solid lightgreen;
+}
+
+.location_highlight_box::before,
+.location_highlight_box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.location_highlight_box::before {
+    background: linear-gradient(45deg, transparent 46%, lightgreen 46%, lightgreen 54%, transparent 54%);
+}
+
+.location_highlight_box::after {
+    background: linear-gradient(-45deg, transparent 46%, lightgreen 46%, lightgreen 54%, transparent 54%);
+}
+
+.both_highlight_box {
+    pointer-events: none;
+    box-sizing: border-box;
+    border: 2px solid plum;
+}
+
+.both_highlight_box::before,
+.both_highlight_box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.both_highlight_box::before {
+    background: linear-gradient(45deg, transparent 46%, plum 46%, plum 54%, transparent 54%);
+}
+
+.both_highlight_box::after {
+    background: linear-gradient(-45deg, transparent 46%, plum 46%, plum 54%, transparent 54%);
 }

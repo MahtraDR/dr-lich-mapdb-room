@@ -85,17 +85,21 @@ def room_page(room_id = None, simu_id = None):
     image_dims = {"width": new_width, "height": new_height}
     room_json_pretty = json.dumps(room, indent=4, sort_keys=True)
     
-    # Get rooms on the same image as current room and collect their tags
+    # Get rooms on the same image as current room and collect their tags and locations
     same_image_rooms = []
     image_tags = set()
+    image_locations = set()
     if room.get("image"):
         for room_info in room_data:
             if room_info.get("image") == room["image"] and room_info.get("image_coords"):
                 same_image_rooms.append(room_info)
                 if room_info.get("tags"):
                     image_tags.update(room_info["tags"])
+                if room_info.get("location"):
+                    image_locations.add(room_info["location"])
     
     image_tags = sorted(list(image_tags))
+    image_locations = sorted(list(image_locations))
     
     return render_template(
         "room.html",
@@ -105,6 +109,7 @@ def room_page(room_id = None, simu_id = None):
         room_json_pretty=room_json_pretty,
         updated_at=updated_at,
         image_tags=image_tags,
+        image_locations=image_locations,
         same_image_rooms=same_image_rooms,
     )
 
