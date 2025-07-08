@@ -101,16 +101,50 @@ def room_page(room_id = None, simu_id = None):
     image_tags = sorted(list(image_tags))
     image_locations = sorted(list(image_locations))
     
-    # Create map navigation list - find first room for each unique map
+    # Create map navigation list with enhanced naming and categorization
     available_maps = {}
+    map_categories = {}
+    
+    # First pass: collect all maps and find rooms with meta tags
     for room_info in room_data:
         if room_info.get("image") and room_info.get("image_coords"):
-            map_name = room_info["image"]
-            if map_name not in available_maps:
-                available_maps[map_name] = room_info["id"]
+            map_image = room_info["image"]
+            
+            # Initialize map entry if not exists
+            if map_image not in available_maps:
+                available_maps[map_image] = {
+                    "room_id": room_info["id"],
+                    "display_name": map_image,
+                    "category": "Other"
+                }
+            
+            # Check for meta tags
+            if room_info.get("tags"):
+                for tag in room_info["tags"]:
+                    # Check for mapname tag
+                    if tag.startswith("meta:mapname:"):
+                        map_name = tag.replace("meta:mapname:", "")
+                        available_maps[map_image]["display_name"] = map_name
+                        available_maps[map_image]["room_id"] = room_info["id"]
+                    
+                    # Check for mapcategory tag
+                    elif tag.startswith("meta:mapcategory:"):
+                        category = tag.replace("meta:mapcategory:", "")
+                        available_maps[map_image]["category"] = category
     
-    # Sort maps alphabetically
-    available_maps = sorted(available_maps.items())
+    # Group maps by category and sort
+    categorized_maps = {}
+    for map_image, map_data in available_maps.items():
+        category = map_data["category"]
+        if category not in categorized_maps:
+            categorized_maps[category] = []
+        categorized_maps[category].append((map_data["display_name"], map_data["room_id"]))
+    
+    # Sort categories and maps within each category
+    sorted_categories = []
+    for category in sorted(categorized_maps.keys()):
+        sorted_maps = sorted(categorized_maps[category])
+        sorted_categories.append((category, sorted_maps))
     
     return render_template(
         "room.html",
@@ -122,7 +156,7 @@ def room_page(room_id = None, simu_id = None):
         image_tags=image_tags,
         image_locations=image_locations,
         same_image_rooms=same_image_rooms,
-        available_maps=available_maps,
+        available_maps=sorted_categories,
     )
 
 @app.route("/search", methods=('GET', 'POST'))

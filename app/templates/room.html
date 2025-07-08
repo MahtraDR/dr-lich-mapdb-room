@@ -31,8 +31,12 @@
                     <div id="map_navigation">
                         <select id="map_dropdown" onchange="navigateToMap()">
                             <option value="">Navigate to map...</option>
-                            {% for map_name, room_id in available_maps %}
-                            <option value="{{ room_id }}" {% if room.image == map_name %}selected{% endif %}>{{ map_name }}</option>
+                            {% for category, maps in available_maps %}
+                            <optgroup label="{{ category }}">
+                                {% for map_name, room_id in maps %}
+                                <option value="{{ room_id }}">{{ map_name }}</option>
+                                {% endfor %}
+                            </optgroup>
                             {% endfor %}
                         </select>
                     </div>

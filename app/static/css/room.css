@@ -125,7 +125,6 @@ h3 {
 
 #title_row h3 {
     margin: 0;
-    flex-grow: 1;
 }
 
 #tag_selector {
@@ -149,7 +148,7 @@ h3 {
     font-size: 12px;
     border: 1px solid #ccc;
     border-radius: 3px;
-    max-width: fit-content;
+    min-width: 120px;
     line-height: 1;
     vertical-align: baseline;
 }
@@ -173,7 +172,7 @@ h3 {
 
 #map_navigation {
     display: flex;
-    align-items: center;
+    align-items: baseline;
 }
 
 #map_dropdown {
@@ -182,6 +181,8 @@ h3 {
     border: 1px solid #ccc;
     border-radius: 3px;
     max-width: fit-content;
+    line-height: 1;
+    vertical-align: baseline;
 }
 
 #mapimage.opacity_active {
