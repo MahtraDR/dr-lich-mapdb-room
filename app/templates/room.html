@@ -23,6 +23,17 @@
                 <h3>{{ room.title[0] }} - Lich: {{ room.id }} - UID: u{{ room.uid | first }}</h3>
         </div>
         {% if room.image %}
+        {% if image_tags %}
+        <div id="tag_selector">
+            <label for="tag_dropdown">Highlight rooms with tag:</label>
+            <select id="tag_dropdown" onchange="highlightTaggedRooms()">
+                <option value="">Select a tag...</option>
+                {% for tag in image_tags %}
+                <option value="{{ tag }}">{{ tag }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
         <div id="image_wrapper">
             <div id="highlight_box" class="highlight_box">
                 <!-- drawing highlight box-->
@@ -76,5 +87,53 @@
                 <small><i>MapDB last updated: {{ updated_at }}</i></small>
             </div>
         </div>
+        
+        <script>
+            // Room data for tag highlighting
+            const sameImageRooms = {{ same_image_rooms | tojson }};
+            const currentImageDimensions = {{ image_dimensions | tojson }};
+            
+            function highlightTaggedRooms() {
+                const selectedTag = document.getElementById('tag_dropdown').value;
+                
+                // Remove existing tag highlights
+                const existingHighlights = document.querySelectorAll('.tag_highlight_box');
+                existingHighlights.forEach(box => box.remove());
+                
+                if (!selectedTag) return;
+                
+                // Find rooms with the selected tag
+                const taggedRooms = sameImageRooms.filter(room => 
+                    room.tags && room.tags.includes(selectedTag)
+                );
+                
+                // Create highlight boxes for tagged rooms
+                taggedRooms.forEach(room => {
+                    if (room.image_coords) {
+                        // Get the original image dimensions from the first room on this image
+                        const imgElement = document.getElementById('mapimage');
+                        const origWidth = imgElement.naturalWidth;
+                        const origHeight = imgElement.naturalHeight;
+                        
+                        const widthRatio = currentImageDimensions.width / origWidth;
+                        const heightRatio = currentImageDimensions.height / origHeight;
+                        
+                        const highlightBox = document.createElement('div');
+                        highlightBox.className = 'tag_highlight_box';
+                        highlightBox.style.position = 'absolute';
+                        highlightBox.style.border = '2px solid blue';
+                        highlightBox.style.backgroundColor = 'rgba(0, 0, 255, 0.2)';
+                        highlightBox.style.zIndex = '8';
+                        highlightBox.style.left = Math.floor(widthRatio * room.image_coords[0]) + 'px';
+                        highlightBox.style.top = Math.floor(heightRatio * room.image_coords[1]) + 'px';
+                        highlightBox.style.width = (Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0])) + 'px';
+                        highlightBox.style.height = (Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1])) + 'px';
+                        highlightBox.title = `Room ${room.id}: ${room.title[0]}`;
+                        
+                        document.getElementById('image_wrapper').appendChild(highlightBox);
+                    }
+                });
+            }
+        </script>
     </body>
 </html>

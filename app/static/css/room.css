@@ -93,3 +93,25 @@ h3 {
 #header {
 	padding: 25;
 }
+
+#tag_selector {
+    padding: 25;
+    padding-bottom: 10px;
+}
+
+#tag_selector label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+#tag_dropdown {
+    padding: 5px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.tag_highlight_box {
+    pointer-events: none;
+    box-sizing: border-box;
+}
