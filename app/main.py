@@ -60,18 +60,92 @@ def room_page(room_id = None, simu_id = None):
         width_ratio = float(new_width) / float(orig_width)
         height_ratio = float(new_height) / float(orig_height)
     if room.get("image_coords"):
-        room_box["x"] = floor(width_ratio * room["image_coords"][0])
-        room_box["y"] = floor(height_ratio * room["image_coords"][1])
-        box_width = floor(width_ratio * room["image_coords"][2]) - floor(
+        original_x = floor(width_ratio * room["image_coords"][0])
+        original_y = floor(height_ratio * room["image_coords"][1])
+        original_width = floor(width_ratio * room["image_coords"][2]) - floor(
             width_ratio * room["image_coords"][0]
         )
-        box_height = floor(height_ratio * room["image_coords"][3]) - floor(
+        original_height = floor(height_ratio * room["image_coords"][3]) - floor(
             height_ratio * room["image_coords"][1]
         )
-        room_box["width"] = box_width
-        room_box["height"] = box_height
+        
+        # Apply minimum dimensions while maintaining center point
+        min_size = 10
+        final_width = max(original_width, min_size)
+        final_height = max(original_height, min_size)
+        
+        # Calculate position adjustment to maintain center
+        width_adjustment = (final_width - original_width) / 2
+        height_adjustment = (final_height - original_height) / 2
+        
+        room_box["x"] = original_x - width_adjustment
+        room_box["y"] = original_y - height_adjustment
+        room_box["width"] = final_width
+        room_box["height"] = final_height
     image_dims = {"width": new_width, "height": new_height}
     room_json_pretty = json.dumps(room, indent=4, sort_keys=True)
+    
+    # Get rooms on the same image as current room and collect their tags and locations
+    same_image_rooms = []
+    image_tags = set()
+    image_locations = set()
+    if room.get("image"):
+        for room_info in room_data:
+            if room_info.get("image") == room["image"] and room_info.get("image_coords"):
+                same_image_rooms.append(room_info)
+                if room_info.get("tags"):
+                    image_tags.update(room_info["tags"])
+                if room_info.get("location"):
+                    image_locations.add(room_info["location"])
+    
+    image_tags = sorted(list(image_tags))
+    image_locations = sorted(list(image_locations))
+    
+    # Create map navigation list with enhanced naming and categorization
+    available_maps = {}
+    map_categories = {}
+    
+    # First pass: collect all maps and find rooms with meta tags
+    for room_info in room_data:
+        if room_info.get("image") and room_info.get("image_coords"):
+            map_image = room_info["image"]
+            
+            # Initialize map entry if not exists
+            if map_image not in available_maps:
+                available_maps[map_image] = {
+                    "room_id": room_info["id"],
+                    "display_name": map_image,
+                    "category": "Other"
+                }
+            
+            # Check for meta tags
+            if room_info.get("tags"):
+                for tag in room_info["tags"]:
+                    # Check for mapname tag
+                    if tag.startswith("meta:mapname:"):
+                        map_name = tag.replace("meta:mapname:", "")
+                        available_maps[map_image]["display_name"] = map_name
+                        available_maps[map_image]["room_id"] = room_info["id"]
+                    
+                    # Check for mapcategory tag
+                    elif tag.startswith("meta:mapcategory:"):
+                        category = tag.replace("meta:mapcategory:", "")
+                        available_maps[map_image]["category"] = category
+    
+    # Group maps by category and sort
+    categorized_maps = {}
+    for map_image, map_data in available_maps.items():
+        category = map_data["category"]
+        if category not in categorized_maps:
+            categorized_maps[category] = []
+        categorized_maps[category].append((map_data["display_name"], map_data["room_id"]))
+    
+    # Sort categories and maps within each category
+    sorted_categories = []
+    for category in sorted(categorized_maps.keys()):
+        sorted_maps = sorted(categorized_maps[category])
+        sorted_categories.append((category, sorted_maps))
+    
     return render_template(
         "room.html",
         room=room,
@@ -79,6 +153,10 @@ def room_page(room_id = None, simu_id = None):
         image_dimensions=image_dims,
         room_json_pretty=room_json_pretty,
         updated_at=updated_at,
+        image_tags=image_tags,
+        image_locations=image_locations,
+        same_image_rooms=same_image_rooms,
+        available_maps=sorted_categories,
     )
 
 @app.route("/search", methods=('GET', 'POST'))

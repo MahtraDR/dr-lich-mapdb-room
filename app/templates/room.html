@@ -20,9 +20,70 @@
     <body>
         <script src="static/js/prism.js"></script>
         <div id="header">
-                <h3>{{ room.title[0] }} - Lich: {{ room.id }} - UID: u{{ room.uid | first }}</h3>
+                <div id="title_row">
+                    <h3>{{ room.title[0] }} - Lich: {{ room.id }} - UID: u{{ room.uid | first }}</h3>
+                    {% if room.image %}
+                    <div id="opacity_toggle">
+                        <input type="checkbox" id="opacity_checkbox" onchange="toggleOpacity()">
+                        <label for="opacity_checkbox">Toggle opacity</label>
+                    </div>
+                    {% endif %}
+                    <div id="map_navigation">
+                        <select id="map_dropdown" onchange="navigateToMap()">
+                            <option value="">Navigate to map...</option>
+                            {% for category, maps in available_maps %}
+                            <optgroup label="{{ category }}">
+                                {% for map_name, room_id in maps %}
+                                <option value="{{ room_id }}">{{ map_name }}</option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% if room.image and image_tags %}
+                <div id="tag_selector">
+                    <label for="tag_dropdown">Highlight tag:</label>
+                    <select id="tag_dropdown" onchange="highlightRooms()">
+                        <option value="">Select a tag...</option>
+                        {% for tag in image_tags %}
+                        <option value="{{ tag }}">{{ tag }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="location_dropdown">Highlight location:</label>
+                    <select id="location_dropdown" onchange="highlightRooms()">
+                        <option value="">Select a location...</option>
+                        {% for location in image_locations %}
+                        <option value="{{ location }}">{{ location }}</option>
+                        {% endfor %}
+                    </select>
+                    <span id="help_icon" onclick="showHelpPopup()">?</span>
+                </div>
+                {% endif %}
         </div>
         {% if room.image %}
+        <div id="help_popup" style="display: none;">
+            <div id="help_popup_content">
+                <span id="help_close" onclick="hideHelpPopup()">×</span>
+                <h4>Room Highlight Examples</h4>
+                <div class="help_example">
+                    <div class="help_highlight highlight_box_example"></div>
+                    <span>Current room</span>
+                </div>
+                <div class="help_example">
+                    <div class="help_highlight tag_highlight_box_example"></div>
+                    <span>Tag highlight</span>
+                </div>
+                <div class="help_example">
+                    <div class="help_highlight location_highlight_box_example"></div>
+                    <span>Location highlight</span>
+                </div>
+                <div class="help_example">
+                    <div class="help_highlight both_highlight_box_example"></div>
+                    <span>Tag + location highlight</span>
+                </div>
+            </div>
+        </div>
         <div id="image_wrapper">
             <div id="highlight_box" class="highlight_box">
                 <!-- drawing highlight box-->
@@ -76,5 +137,115 @@
                 <small><i>MapDB last updated: {{ updated_at }}</i></small>
             </div>
         </div>
+        
+        <script>
+            // Room data for tag highlighting
+            const sameImageRooms = {{ same_image_rooms | tojson }};
+            const currentImageDimensions = {{ image_dimensions | tojson }};
+            
+            function highlightRooms() {
+                const selectedTag = document.getElementById('tag_dropdown').value;
+                const selectedLocation = document.getElementById('location_dropdown').value;
+                
+                // Remove existing highlight boxes
+                const existingHighlights = document.querySelectorAll('.tag_highlight_box, .location_highlight_box, .both_highlight_box');
+                existingHighlights.forEach(box => box.remove());
+                
+                if (!selectedTag && !selectedLocation) return;
+                
+                // Get the original image dimensions
+                const imgElement = document.getElementById('mapimage');
+                const origWidth = imgElement.naturalWidth;
+                const origHeight = imgElement.naturalHeight;
+                
+                const widthRatio = currentImageDimensions.width / origWidth;
+                const heightRatio = currentImageDimensions.height / origHeight;
+                
+                // Process each room
+                sameImageRooms.forEach(room => {
+                    if (room.image_coords) {
+                        const hasTag = selectedTag && room.tags && room.tags.includes(selectedTag);
+                        const hasLocation = selectedLocation && room.location === selectedLocation;
+                        
+                        if (hasTag || hasLocation) {
+                            const highlightBox = document.createElement('div');
+                            highlightBox.style.position = 'absolute';
+                            highlightBox.style.zIndex = '8';
+                            
+                            // Determine highlight type and class
+                            if (hasTag && hasLocation) {
+                                highlightBox.className = 'both_highlight_box';
+                            } else if (hasTag) {
+                                highlightBox.className = 'tag_highlight_box';
+                            } else {
+                                highlightBox.className = 'location_highlight_box';
+                            }
+                            
+                            // Calculate original dimensions
+                            const originalWidth = Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0]);
+                            const originalHeight = Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1]);
+                            
+                            // Apply minimum dimensions while maintaining center point
+                            const minSize = 10;
+                            const finalWidth = Math.max(originalWidth, minSize);
+                            const finalHeight = Math.max(originalHeight, minSize);
+                            
+                            // Calculate position adjustment to maintain center
+                            const widthAdjustment = (finalWidth - originalWidth) / 2;
+                            const heightAdjustment = (finalHeight - originalHeight) / 2;
+                            
+                            highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25 - widthAdjustment) + 'px';
+                            highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 1 - heightAdjustment) + 'px';
+                            highlightBox.style.width = finalWidth + 'px';
+                            highlightBox.style.height = finalHeight + 'px';
+                            highlightBox.title = `Room ${room.id}: ${room.title[0]}`;
+                            
+                            document.getElementById('image_wrapper').appendChild(highlightBox);
+                        }
+                    }
+                });
+            }
+            
+            function toggleOpacity() {
+                const mapImage = document.getElementById('mapimage');
+                const checkbox = document.getElementById('opacity_checkbox');
+                
+                if (checkbox.checked) {
+                    mapImage.classList.add('opacity_active');
+                } else {
+                    mapImage.classList.remove('opacity_active');
+                }
+            }
+            
+            function navigateToMap() {
+                const dropdown = document.getElementById('map_dropdown');
+                const selectedRoomId = dropdown.value;
+                
+                if (selectedRoomId) {
+                    window.location.href = '/' + selectedRoomId;
+                }
+            }
+            
+            function showHelpPopup() {
+                document.getElementById('help_popup').style.display = 'flex';
+            }
+            
+            function hideHelpPopup() {
+                document.getElementById('help_popup').style.display = 'none';
+            }
+            
+            // Hide popup when clicking outside
+            document.addEventListener('click', function(event) {
+                const popup = document.getElementById('help_popup');
+                const popupContent = document.getElementById('help_popup_content');
+                const helpIcon = document.getElementById('help_icon');
+                
+                if (popup && popup.style.display === 'flex' && 
+                    !popupContent.contains(event.target) && 
+                    event.target !== helpIcon) {
+                    hideHelpPopup();
+                }
+            });
+        </script>
     </body>
 </html>
