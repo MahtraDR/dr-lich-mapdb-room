@@ -237,10 +237,11 @@
             // Hide popup when clicking outside
             document.addEventListener('click', function(event) {
                 const popup = document.getElementById('help_popup');
+                const popupContent = document.getElementById('help_popup_content');
                 const helpIcon = document.getElementById('help_icon');
                 
                 if (popup && popup.style.display === 'flex' && 
-                    !popup.contains(event.target) && 
+                    !popupContent.contains(event.target) && 
                     event.target !== helpIcon) {
                     hideHelpPopup();
                 }

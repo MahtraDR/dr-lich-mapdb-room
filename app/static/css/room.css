@@ -197,6 +197,7 @@ h3 {
 #map_dropdown option {
     font-weight: normal;
     font-size: 11px !important;
+    color: inherit;
 }
 
 #mapimage.opacity_active {
@@ -326,7 +327,8 @@ h3 {
 }
 
 #help_popup_content {
-    background-color: white;
+    background-color: #11191f;
+    color: white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -340,11 +342,11 @@ h3 {
     right: 12px;
     font-size: 20px;
     cursor: pointer;
-    color: #666;
+    color: #ccc;
 }
 
 #help_close:hover {
-    color: #000;
+    color: white;
 }
 
 #help_popup h4 {
