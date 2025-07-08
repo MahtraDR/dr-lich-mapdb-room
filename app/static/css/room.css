@@ -38,7 +38,13 @@
     filter: opacity(20%);
 }
 @keyframes animationFrames {
+    0% {
+        border-color: palevioletred;
+    }
     50% {
+        border-color: green;
+    }
+    100% {
         border-color: palevioletred;
     }
 }
@@ -112,6 +118,9 @@ h3 {
 
 #tag_selector {
     padding-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 #tag_selector label {
@@ -128,11 +137,13 @@ h3 {
 }
 
 #opacity_toggle {
-    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 #opacity_toggle input {
-    margin-right: 5px;
+    margin: 0;
 }
 
 #mapimage.opacity_active {
