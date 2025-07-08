@@ -154,6 +154,16 @@ h3 {
     filter: opacity(20%);
 }
 
+.highlight_box,
+.tag_highlight_box {
+    opacity: 1 !important;
+    -webkit-filter: none !important;
+    -moz-filter: none !important;
+    -o-filter: none !important;
+    -ms-filter: none !important;
+    filter: none !important;
+}
+
 .tag_highlight_box {
     pointer-events: none;
     box-sizing: border-box;

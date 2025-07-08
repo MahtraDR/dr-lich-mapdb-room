@@ -126,10 +126,24 @@
                         highlightBox.className = 'tag_highlight_box';
                         highlightBox.style.position = 'absolute';
                         highlightBox.style.zIndex = '8';
-                        highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25) + 'px';
-                        highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 25) + 'px';
-                        highlightBox.style.width = (Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0])) + 'px';
-                        highlightBox.style.height = (Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1])) + 'px';
+                        
+                        // Calculate original dimensions
+                        const originalWidth = Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0]);
+                        const originalHeight = Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1]);
+                        
+                        // Apply minimum dimensions while maintaining center point
+                        const minSize = 10;
+                        const finalWidth = Math.max(originalWidth, minSize);
+                        const finalHeight = Math.max(originalHeight, minSize);
+                        
+                        // Calculate position adjustment to maintain center
+                        const widthAdjustment = (finalWidth - originalWidth) / 2;
+                        const heightAdjustment = (finalHeight - originalHeight) / 2;
+                        
+                        highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25 - widthAdjustment) + 'px';
+                        highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 25 - heightAdjustment) + 'px';
+                        highlightBox.style.width = finalWidth + 'px';
+                        highlightBox.style.height = finalHeight + 'px';
                         highlightBox.title = `Room ${room.id}: ${room.title[0]}`;
                         
                         document.getElementById('image_wrapper').appendChild(highlightBox);

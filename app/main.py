@@ -60,16 +60,28 @@ def room_page(room_id = None, simu_id = None):
         width_ratio = float(new_width) / float(orig_width)
         height_ratio = float(new_height) / float(orig_height)
     if room.get("image_coords"):
-        room_box["x"] = floor(width_ratio * room["image_coords"][0])
-        room_box["y"] = floor(height_ratio * room["image_coords"][1])
-        box_width = floor(width_ratio * room["image_coords"][2]) - floor(
+        original_x = floor(width_ratio * room["image_coords"][0])
+        original_y = floor(height_ratio * room["image_coords"][1])
+        original_width = floor(width_ratio * room["image_coords"][2]) - floor(
             width_ratio * room["image_coords"][0]
         )
-        box_height = floor(height_ratio * room["image_coords"][3]) - floor(
+        original_height = floor(height_ratio * room["image_coords"][3]) - floor(
             height_ratio * room["image_coords"][1]
         )
-        room_box["width"] = box_width
-        room_box["height"] = box_height
+        
+        # Apply minimum dimensions while maintaining center point
+        min_size = 10
+        final_width = max(original_width, min_size)
+        final_height = max(original_height, min_size)
+        
+        # Calculate position adjustment to maintain center
+        width_adjustment = (final_width - original_width) / 2
+        height_adjustment = (final_height - original_height) / 2
+        
+        room_box["x"] = original_x - width_adjustment
+        room_box["y"] = original_y - height_adjustment
+        room_box["width"] = final_width
+        room_box["height"] = final_height
     image_dims = {"width": new_width, "height": new_height}
     room_json_pretty = json.dumps(room, indent=4, sort_keys=True)
     
