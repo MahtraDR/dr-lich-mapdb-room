@@ -141,7 +141,7 @@
                         const heightAdjustment = (finalHeight - originalHeight) / 2;
                         
                         highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25 - widthAdjustment) + 'px';
-                        highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 25 - heightAdjustment) + 'px';
+                        highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 1 - heightAdjustment) + 'px';
                         highlightBox.style.width = finalWidth + 'px';
                         highlightBox.style.height = finalHeight + 'px';
                         highlightBox.title = `Room ${room.id}: ${room.title[0]}`;

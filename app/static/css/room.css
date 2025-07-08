@@ -50,7 +50,7 @@
 }
 
 #image_wrapper {
-    padding: 5px 25px 25px 25px;
+    padding: 1px 25px 25px 25px;
     position: relative;
 }
 
@@ -113,7 +113,7 @@ h3 {
 }
 
 #header {
-	padding: 25px 25px 5px 25px;
+	padding: 25px 25px 1px 25px;
 }
 
 #tag_selector {
