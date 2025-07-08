@@ -28,6 +28,14 @@
                         <label for="opacity_checkbox">Toggle opacity</label>
                     </div>
                     {% endif %}
+                    <div id="map_navigation">
+                        <select id="map_dropdown" onchange="navigateToMap()">
+                            <option value="">Navigate to map...</option>
+                            {% for map_name, room_id in available_maps %}
+                            <option value="{{ room_id }}" {% if room.image == map_name %}selected{% endif %}>{{ map_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
                 {% if room.image and image_tags %}
                 <div id="tag_selector">
@@ -179,6 +187,15 @@
                     mapImage.classList.add('opacity_active');
                 } else {
                     mapImage.classList.remove('opacity_active');
+                }
+            }
+            
+            function navigateToMap() {
+                const dropdown = document.getElementById('map_dropdown');
+                const selectedRoomId = dropdown.value;
+                
+                if (selectedRoomId) {
+                    window.location.href = '/' + selectedRoomId;
                 }
             }
         </script>

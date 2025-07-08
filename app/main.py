@@ -101,6 +101,17 @@ def room_page(room_id = None, simu_id = None):
     image_tags = sorted(list(image_tags))
     image_locations = sorted(list(image_locations))
     
+    # Create map navigation list - find first room for each unique map
+    available_maps = {}
+    for room_info in room_data:
+        if room_info.get("image") and room_info.get("image_coords"):
+            map_name = room_info["image"]
+            if map_name not in available_maps:
+                available_maps[map_name] = room_info["id"]
+    
+    # Sort maps alphabetically
+    available_maps = sorted(available_maps.items())
+    
     return render_template(
         "room.html",
         room=room,
@@ -111,6 +122,7 @@ def room_page(room_id = None, simu_id = None):
         image_tags=image_tags,
         image_locations=image_locations,
         same_image_rooms=same_image_rooms,
+        available_maps=available_maps,
     )
 
 @app.route("/search", methods=('GET', 'POST'))
