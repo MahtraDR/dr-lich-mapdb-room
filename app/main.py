@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import render_template, url_for, request, redirect
+from flask import render_template, url_for, request, redirect, jsonify
 from PIL import Image
 from math import floor
 import re
@@ -68,23 +68,23 @@ def room_page(room_id = None, simu_id = None):
         original_height = floor(height_ratio * room["image_coords"][3]) - floor(
             height_ratio * room["image_coords"][1]
         )
-        
+
         # Apply minimum dimensions while maintaining center point
         min_size = 10
         final_width = max(original_width, min_size)
         final_height = max(original_height, min_size)
-        
+
         # Calculate position adjustment to maintain center
         width_adjustment = (final_width - original_width) / 2
         height_adjustment = (final_height - original_height) / 2
-        
+
         room_box["x"] = original_x - width_adjustment
         room_box["y"] = original_y - height_adjustment
         room_box["width"] = final_width
         room_box["height"] = final_height
     image_dims = {"width": new_width, "height": new_height}
     room_json_pretty = json.dumps(room, indent=4, sort_keys=True)
-    
+
     # Get rooms on the same image as current room and collect their tags and locations
     same_image_rooms = []
     image_tags = set()
@@ -97,19 +97,19 @@ def room_page(room_id = None, simu_id = None):
                     image_tags.update(room_info["tags"])
                 if room_info.get("location"):
                     image_locations.add(room_info["location"])
-    
+
     image_tags = sorted(list(image_tags))
     image_locations = sorted(list(image_locations))
-    
+
     # Create map navigation list with enhanced naming and categorization
     available_maps = {}
     map_categories = {}
-    
+
     # First pass: collect all maps and find rooms with meta tags
     for room_info in room_data:
         if room_info.get("image") and room_info.get("image_coords"):
             map_image = room_info["image"]
-            
+
             # Initialize map entry if not exists
             if map_image not in available_maps:
                 available_maps[map_image] = {
@@ -117,7 +117,7 @@ def room_page(room_id = None, simu_id = None):
                     "display_name": map_image,
                     "category": "Other"
                 }
-            
+
             # Check for meta tags
             if room_info.get("tags"):
                 for tag in room_info["tags"]:
@@ -126,12 +126,12 @@ def room_page(room_id = None, simu_id = None):
                         map_name = tag.replace("meta:mapname:", "")
                         available_maps[map_image]["display_name"] = map_name
                         available_maps[map_image]["room_id"] = room_info["id"]
-                    
+
                     # Check for mapcategory tag
                     elif tag.startswith("meta:mapcategory:"):
                         category = tag.replace("meta:mapcategory:", "")
                         available_maps[map_image]["category"] = category
-    
+
     # Group maps by category and sort
     categorized_maps = {}
     for map_image, map_data in available_maps.items():
@@ -139,13 +139,13 @@ def room_page(room_id = None, simu_id = None):
         if category not in categorized_maps:
             categorized_maps[category] = []
         categorized_maps[category].append((map_data["display_name"], map_data["room_id"]))
-    
+
     # Sort categories and maps within each category
     sorted_categories = []
     for category in sorted(categorized_maps.keys()):
         sorted_maps = sorted(categorized_maps[category])
         sorted_categories.append((category, sorted_maps))
-    
+
     return render_template(
         "room.html",
         room=room,
@@ -159,9 +159,57 @@ def room_page(room_id = None, simu_id = None):
         available_maps=sorted_categories,
     )
 
+@app.route("/api/tags")
+def get_tags():
+	all_tags = set()
+	for room in room_data:
+		if room.get("tags"):
+			all_tags.update(room["tags"])
+	return jsonify(sorted(list(all_tags)))
+
+@app.route("/api/images/<tag>")
+def get_images_for_tag(tag):
+	images = set()
+	for room in room_data:
+		if room.get("tags") and tag in room["tags"] and room.get("image"):
+			images.add(room["image"])
+	return jsonify(sorted(list(images)))
+
+@app.route("/api/locations/<image>")
+def get_locations_for_image(image):
+	tag = request.args.get('tag')
+	locations = set()
+	for room in room_data:
+		image_match = room.get("image") == image
+		location_exists = room.get("location")
+		tag_match = not tag or (room.get("tags") and tag in room["tags"])
+
+		if image_match and location_exists and tag_match:
+			locations.add(room["location"])
+	return jsonify(sorted(list(locations)))
+
 @app.route("/search", methods=('GET', 'POST'))
 def search():
 	if request.method == 'POST':
+		# Handle tag+image combination search
+		if 'tag' in request.form and 'image' in request.form:
+			tag = request.form['tag']
+			image = request.form['image']
+			location = request.form.get('location', '')
+
+			for room in room_data:
+				tag_match = room.get("tags") and tag in room["tags"]
+				image_match = room.get("image") == image
+				location_match = not location or room.get("location") == location
+
+				if tag_match and image_match and location_match:
+					url_params = {'room_id': room["id"], 'highlight_tag': tag}
+					if location:
+						url_params['highlight_location'] = location
+					return redirect(url_for('room_page', **url_params))
+			return render_template('search.html', results={}, overflow=False)
+
+		# Handle text search
 		search = request.form['search'].strip().lower()
 		overflow = False
 		try:
@@ -183,14 +231,14 @@ def search():
 					overflow = True
 					break
 				for title in rinfo.get('title', {}):
-					title_check = re.search(search, title, re.IGNORECASE)
+					title_check = re.search(re.escape(search), title, re.IGNORECASE)
 					if title_check:
 						room_list[rid] = rinfo
 						break
 				if room_list.get(rid):
 					continue
 				for desc in rinfo.get('description', {}):
-					desc_check = re.search(search, desc, re.IGNORECASE)
+					desc_check = re.search(re.escape(search), desc, re.IGNORECASE)
 					if desc_check:
 						room_list[rid] = rinfo
 						break
@@ -199,3 +247,6 @@ def search():
 		return render_template('search.html', results=room_list, overflow=overflow)
 	else:
 		return render_template('search.html', results=None, overflow=False)
+
+if __name__ == '__main__':
+    app.run(debug=True, host='127.0.0.1', port=8000)
