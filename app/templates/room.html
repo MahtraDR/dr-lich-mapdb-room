@@ -137,41 +137,64 @@
                 <small><i>MapDB last updated: {{ updated_at }}</i></small>
             </div>
         </div>
-        
+
         <script>
             // Room data for tag highlighting
             const sameImageRooms = {{ same_image_rooms | tojson }};
             const currentImageDimensions = {{ image_dimensions | tojson }};
-            
+
+            // Check for highlight parameters and pre-select dropdowns
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightTag = urlParams.get('highlight_tag');
+            const highlightLocation = urlParams.get('highlight_location');
+
+            window.addEventListener('load', function() {
+                if (highlightTag) {
+                    const tagDropdown = document.getElementById('tag_dropdown');
+                    if (tagDropdown) {
+                        tagDropdown.value = highlightTag;
+                    }
+                }
+                if (highlightLocation) {
+                    const locationDropdown = document.getElementById('location_dropdown');
+                    if (locationDropdown) {
+                        locationDropdown.value = highlightLocation;
+                    }
+                }
+                if (highlightTag || highlightLocation) {
+                    highlightRooms();
+                }
+            });
+
             function highlightRooms() {
                 const selectedTag = document.getElementById('tag_dropdown').value;
                 const selectedLocation = document.getElementById('location_dropdown').value;
-                
+
                 // Remove existing highlight boxes
                 const existingHighlights = document.querySelectorAll('.tag_highlight_box, .location_highlight_box, .both_highlight_box');
                 existingHighlights.forEach(box => box.remove());
-                
+
                 if (!selectedTag && !selectedLocation) return;
-                
+
                 // Get the original image dimensions
                 const imgElement = document.getElementById('mapimage');
                 const origWidth = imgElement.naturalWidth;
                 const origHeight = imgElement.naturalHeight;
-                
+
                 const widthRatio = currentImageDimensions.width / origWidth;
                 const heightRatio = currentImageDimensions.height / origHeight;
-                
+
                 // Process each room
                 sameImageRooms.forEach(room => {
                     if (room.image_coords) {
                         const hasTag = selectedTag && room.tags && room.tags.includes(selectedTag);
                         const hasLocation = selectedLocation && room.location === selectedLocation;
-                        
+
                         if (hasTag || hasLocation) {
                             const highlightBox = document.createElement('div');
                             highlightBox.style.position = 'absolute';
                             highlightBox.style.zIndex = '8';
-                            
+
                             // Determine highlight type and class
                             if (hasTag && hasLocation) {
                                 highlightBox.className = 'both_highlight_box';
@@ -180,68 +203,68 @@
                             } else {
                                 highlightBox.className = 'location_highlight_box';
                             }
-                            
+
                             // Calculate original dimensions
                             const originalWidth = Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0]);
                             const originalHeight = Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1]);
-                            
+
                             // Apply minimum dimensions while maintaining center point
                             const minSize = 10;
                             const finalWidth = Math.max(originalWidth, minSize);
                             const finalHeight = Math.max(originalHeight, minSize);
-                            
+
                             // Calculate position adjustment to maintain center
                             const widthAdjustment = (finalWidth - originalWidth) / 2;
                             const heightAdjustment = (finalHeight - originalHeight) / 2;
-                            
+
                             highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25 - widthAdjustment) + 'px';
                             highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 1 - heightAdjustment) + 'px';
                             highlightBox.style.width = finalWidth + 'px';
                             highlightBox.style.height = finalHeight + 'px';
                             highlightBox.title = `Room ${room.id}: ${room.title[0]}`;
-                            
+
                             document.getElementById('image_wrapper').appendChild(highlightBox);
                         }
                     }
                 });
             }
-            
+
             function toggleOpacity() {
                 const mapImage = document.getElementById('mapimage');
                 const checkbox = document.getElementById('opacity_checkbox');
-                
+
                 if (checkbox.checked) {
                     mapImage.classList.add('opacity_active');
                 } else {
                     mapImage.classList.remove('opacity_active');
                 }
             }
-            
+
             function navigateToMap() {
                 const dropdown = document.getElementById('map_dropdown');
                 const selectedRoomId = dropdown.value;
-                
+
                 if (selectedRoomId) {
                     window.location.href = '/' + selectedRoomId;
                 }
             }
-            
+
             function showHelpPopup() {
                 document.getElementById('help_popup').style.display = 'flex';
             }
-            
+
             function hideHelpPopup() {
                 document.getElementById('help_popup').style.display = 'none';
             }
-            
+
             // Hide popup when clicking outside
             document.addEventListener('click', function(event) {
                 const popup = document.getElementById('help_popup');
                 const popupContent = document.getElementById('help_popup_content');
                 const helpIcon = document.getElementById('help_icon');
-                
-                if (popup && popup.style.display === 'flex' && 
-                    !popupContent.contains(event.target) && 
+
+                if (popup && popup.style.display === 'flex' &&
+                    !popupContent.contains(event.target) &&
                     event.target !== helpIcon) {
                     hideHelpPopup();
                 }
