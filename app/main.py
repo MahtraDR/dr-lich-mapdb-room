@@ -146,6 +146,35 @@ def room_page(room_id = None, simu_id = None):
         sorted_maps = sorted(categorized_maps[category])
         sorted_categories.append((category, sorted_maps))
 
+    # Find adjacent maps - maps that are connected via room exits
+    adjacent_maps = {}
+    if room.get("image"):
+        # Get all rooms on current map
+        current_map_rooms = [r for r in same_image_rooms]
+
+        # For each room on current map, check their exits
+        for current_room in current_map_rooms:
+            if current_room.get("wayto"):
+                for exit_room_id in current_room["wayto"].keys():
+                    # Find the exit room in our data
+                    exit_room = rd_dict.get(int(exit_room_id))
+                    if exit_room and exit_room.get("image") and exit_room["image"] != room["image"]:
+                        # This room connects to a different map
+                        adjacent_image = exit_room["image"]
+                        if adjacent_image not in adjacent_maps:
+                            # Get display name from available_maps if it exists
+                            display_name = adjacent_image
+                            if adjacent_image in available_maps:
+                                display_name = available_maps[adjacent_image]["display_name"]
+
+                            adjacent_maps[adjacent_image] = {
+                                "room_id": exit_room["id"],
+                                "display_name": display_name
+                            }
+
+    # Sort adjacent maps by display name
+    sorted_adjacent_maps = sorted(adjacent_maps.items(), key=lambda x: x[1]["display_name"])
+
     return render_template(
         "room.html",
         room=room,
@@ -157,6 +186,7 @@ def room_page(room_id = None, simu_id = None):
         image_locations=image_locations,
         same_image_rooms=same_image_rooms,
         available_maps=sorted_categories,
+        adjacent_maps=sorted_adjacent_maps,
     )
 
 @app.route("/api/tags")

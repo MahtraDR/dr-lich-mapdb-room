@@ -19,6 +19,29 @@
     </head>
     <body>
         <script src="static/js/prism.js"></script>
+        <div id="navigation_header">
+            <div id="map_navigation">
+                <select id="map_dropdown" onchange="navigateToMap()">
+                    <option value="">Navigate to map...</option>
+                    {% for category, maps in available_maps %}
+                    <optgroup label="{{ category }}">
+                        {% for map_name, room_id in maps %}
+                        <option value="{{ room_id }}">{{ map_name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endfor %}
+                </select>
+                {% if adjacent_maps %}
+                <select id="adjacent_map_dropdown" onchange="navigateToAdjacentMap()">
+                    <option value="">Adjacent maps...</option>
+                    {% for map_image, map_data in adjacent_maps %}
+                    <option value="{{ map_data.room_id }}">{{ map_data.display_name }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <a href="#search_section" id="search_link">Search...</a>
+            </div>
+        </div>
         <div id="header">
                 <div id="title_row">
                     <h3>{{ room.title[0] }} - Lich: {{ room.id }} - UID: u{{ room.uid | first }}</h3>
@@ -28,18 +51,6 @@
                         <label for="opacity_checkbox">Toggle opacity</label>
                     </div>
                     {% endif %}
-                    <div id="map_navigation">
-                        <select id="map_dropdown" onchange="navigateToMap()">
-                            <option value="">Navigate to map...</option>
-                            {% for category, maps in available_maps %}
-                            <optgroup label="{{ category }}">
-                                {% for map_name, room_id in maps %}
-                                <option value="{{ room_id }}">{{ map_name }}</option>
-                                {% endfor %}
-                            </optgroup>
-                            {% endfor %}
-                        </select>
-                    </div>
                 </div>
                 {% if room.image and image_tags %}
                 <div id="tag_selector">
@@ -118,7 +129,7 @@
                             {{ room_way }}
                         </td>
                         <td>
-                            <a href="{{ room_exit }}">{{ room_exit }}
+                            <a href="{{ room_exit }}">{{ room_exit }}</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -132,7 +143,9 @@
                     </article>
                 </details>
             </div>
-            {% with results=None, overflow=False %} {% include "search_block.html" %} {% endwith %}
+            <div id="search_section" style="padding-left: 15px;">
+                {% with results=None, overflow=False %} {% include "search_block.html" %} {% endwith %}
+            </div>
             <div id=updated_at>
                 <small><i>MapDB last updated: {{ updated_at }}</i></small>
             </div>
@@ -163,6 +176,14 @@
                 }
                 if (highlightTag || highlightLocation) {
                     highlightRooms();
+                }
+
+                // Add click listener to map image for room navigation
+                const mapImage = document.getElementById('mapimage');
+                if (mapImage) {
+                    mapImage.addEventListener('click', function(event) {
+                        handleMapClick(event);
+                    });
                 }
             });
 
@@ -249,6 +270,15 @@
                 }
             }
 
+            function navigateToAdjacentMap() {
+                const dropdown = document.getElementById('adjacent_map_dropdown');
+                const selectedRoomId = dropdown.value;
+
+                if (selectedRoomId) {
+                    window.location.href = '/' + selectedRoomId;
+                }
+            }
+
             function showHelpPopup() {
                 document.getElementById('help_popup').style.display = 'flex';
             }
@@ -269,6 +299,76 @@
                     hideHelpPopup();
                 }
             });
+
+            function handleMapClick(event) {
+                // Get click coordinates relative to the image
+                const rect = event.target.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const clickY = event.clientY - rect.top;
+
+                // Get the original image dimensions
+                const imgElement = document.getElementById('mapimage');
+                const origWidth = imgElement.naturalWidth;
+                const origHeight = imgElement.naturalHeight;
+
+                const widthRatio = currentImageDimensions.width / origWidth;
+                const heightRatio = currentImageDimensions.height / origHeight;
+
+                // Find which room was clicked
+                let clickedRoom = null;
+                sameImageRooms.forEach(room => {
+                    if (room.image_coords) {
+                        // Calculate room boundaries using same logic as highlight boxes
+                        const originalX = Math.floor(widthRatio * room.image_coords[0]);
+                        const originalY = Math.floor(heightRatio * room.image_coords[1]);
+                        const originalWidth = Math.floor(widthRatio * room.image_coords[2]) - Math.floor(widthRatio * room.image_coords[0]);
+                        const originalHeight = Math.floor(heightRatio * room.image_coords[3]) - Math.floor(heightRatio * room.image_coords[1]);
+
+                        // Apply minimum dimensions while maintaining center point
+                        const minSize = 10;
+                        const finalWidth = Math.max(originalWidth, minSize);
+                        const finalHeight = Math.max(originalHeight, minSize);
+
+                        // Calculate position adjustment to maintain center
+                        const widthAdjustment = (finalWidth - originalWidth) / 2;
+                        const heightAdjustment = (finalHeight - originalHeight) / 2;
+
+                        const roomLeft = originalX - widthAdjustment;
+                        const roomTop = originalY - heightAdjustment;
+                        const roomRight = roomLeft + finalWidth;
+                        const roomBottom = roomTop + finalHeight;
+
+                        // Check if click is within this room's boundaries
+                        if (clickX >= roomLeft && clickX <= roomRight &&
+                            clickY >= roomTop && clickY <= roomBottom) {
+                            clickedRoom = room;
+                        }
+                    }
+                });
+
+                if (clickedRoom) {
+                    navigateToRoom(clickedRoom.id);
+                }
+            }
+
+            function navigateToRoom(roomId) {
+                // Preserve current highlight selections
+                const currentTag = document.getElementById('tag_dropdown') ? document.getElementById('tag_dropdown').value : '';
+                const currentLocation = document.getElementById('location_dropdown') ? document.getElementById('location_dropdown').value : '';
+
+                // Build URL with preserved state
+                let url = '/' + roomId;
+                const params = new URLSearchParams();
+
+                if (currentTag) params.append('highlight_tag', currentTag);
+                if (currentLocation) params.append('highlight_location', currentLocation);
+
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+
+                window.location.href = url;
+            }
         </script>
     </body>
 </html>

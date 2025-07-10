@@ -1,31 +1,31 @@
-<div style="max-width: 600px; padding: 10px;">
-    <form method="post" action="/search" style="margin-bottom: 15px;">
-        <label for="search" style="font-size: 14px; margin-bottom: 5px; display: block;">Room Lich ID, Simu ID, or any search criteria</label>
-        <input type="text" name="search" style="width: 100%; padding: 6px; margin-bottom: 8px; font-size: 14px;"
+<div style="max-width: 600px; padding: 10px; box-sizing: border-box;">
+    <form method="post" action="/search" style="margin-bottom: 8px;">
+        <label for="search" style="font-size: 14px; margin-bottom: 3px; display: block; font-weight: bold;">Search by: Room ID, UID (u12345), tag name, or text in room titles/descriptions</label>
+        <input type="text" name="search" style="width: 100%; padding: 6px; margin-bottom: 4px; font-size: 14px; box-sizing: border-box;"
                placeholder="Room Lich ID, Simu ID, or any search criteria"
                value="{{ request.form['search'] }}">
         <button type="submit" style="padding: 6px 12px; font-size: 14px;">Search</button>
     </form>
 
-    <hr style="margin: 15px 0;">
+    <hr style="margin: 8px 0;">
 
     <form method="post" action="/search" id="tagSearchForm">
-        <label style="font-size: 14px; margin-bottom: 8px; display: block;">Advanced Search by Tag and Map:</label>
+        <label style="font-size: 14px; margin-bottom: 3px; display: block; font-weight: bold;">Advanced Search by Tag and Map:</label>
 
-        <div style="margin-bottom: 10px;">
+        <div style="margin-bottom: 4px; padding-left: 0; position: relative;">
             <input type="text" name="tag" id="tagInput" placeholder="Start typing a tag..." autocomplete="off"
-                   style="width: 100%; padding: 6px; font-size: 14px;">
-            <div id="tagSuggestions" style="display: none; border: 1px solid #ccc; background: white; max-height: 150px; overflow-y: auto; position: absolute; z-index: 1000; font-size: 14px;"></div>
+                   style="width: 100%; padding: 6px; font-size: 14px; box-sizing: border-box;">
+            <div id="tagSuggestions" style="display: none; border: 1px solid #ccc; background: white; max-height: 150px; overflow-y: auto; position: absolute; top: calc(100% - 2px); left: 0; right: 0; z-index: 1000; font-size: 14px; margin-top: 0;"></div>
         </div>
 
-        <div style="margin-bottom: 10px;">
-            <select name="image" id="imageSelect" disabled style="width: 100%; padding: 6px; font-size: 14px;">
+        <div style="margin-bottom: 4px; padding-left: 0;">
+            <select name="image" id="imageSelect" disabled style="width: 100%; padding: 6px; font-size: 14px; box-sizing: border-box;">
                 <option value="">Select a map...</option>
             </select>
         </div>
 
-        <div style="margin-bottom: 10px;">
-            <select name="location" id="locationSelect" disabled style="width: 100%; padding: 6px; font-size: 14px;">
+        <div style="margin-bottom: 4px; padding-left: 0;">
+            <select name="location" id="locationSelect" disabled style="width: 100%; padding: 6px; font-size: 14px; box-sizing: border-box;">
                 <option value="">Select a location (optional)...</option>
             </select>
         </div>
@@ -40,6 +40,7 @@
         const locationSelect = document.getElementById('locationSelect');
         const tagSearchButton = document.getElementById('tagSearchButton');
         let allTags = [];
+        let selectedIndex = -1;
 
         // Load tags on page load
         fetch('/api/tags')
@@ -84,21 +85,38 @@
         // Show suggestions
         function showSuggestions(tags) {
             tagSuggestions.innerHTML = '';
-            tags.forEach(tag => {
+            selectedIndex = -1;
+            tags.forEach((tag, index) => {
                 const div = document.createElement('div');
                 div.textContent = tag;
                 div.style.padding = '4px 8px';
                 div.style.cursor = 'pointer';
                 div.style.borderBottom = '1px solid #eee';
                 div.style.color = '#333';
+                div.style.backgroundColor = 'white';
+                div.className = 'suggestion-item';
                 div.addEventListener('click', () => selectTag(tag));
-                div.addEventListener('mouseenter', () => div.style.backgroundColor = '#0066cc');
-                div.addEventListener('mouseenter', () => div.style.color = 'white');
-                div.addEventListener('mouseleave', () => div.style.backgroundColor = 'white');
-                div.addEventListener('mouseleave', () => div.style.color = '#333');
+                div.addEventListener('mouseenter', () => {
+                    selectedIndex = index;
+                    updateHighlight();
+                });
                 tagSuggestions.appendChild(div);
             });
             tagSuggestions.style.display = 'block';
+        }
+
+        // Update highlight based on selectedIndex
+        function updateHighlight() {
+            const items = tagSuggestions.querySelectorAll('.suggestion-item');
+            items.forEach((item, index) => {
+                if (index === selectedIndex) {
+                    item.style.backgroundColor = '#0066cc';
+                    item.style.color = 'white';
+                } else {
+                    item.style.backgroundColor = 'white';
+                    item.style.color = '#333';
+                }
+            });
         }
 
         // Hide suggestions
@@ -164,14 +182,32 @@
             setTimeout(() => hideSuggestions(), 100);
         });
 
-        // Handle enter key to select first suggestion
+        // Handle arrow keys and enter for suggestion navigation
         tagInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
+            const items = tagSuggestions.querySelectorAll('.suggestion-item');
+            const isVisible = tagSuggestions.style.display === 'block';
+
+            if (!isVisible || items.length === 0) {
+                return;
+            }
+
+            if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                const firstSuggestion = tagSuggestions.querySelector('div');
-                if (firstSuggestion) {
-                    selectTag(firstSuggestion.textContent);
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateHighlight();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateHighlight();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && selectedIndex < items.length) {
+                    selectTag(items[selectedIndex].textContent);
+                } else if (items.length > 0) {
+                    selectTag(items[0].textContent);
                 }
+            } else if (e.key === 'Escape') {
+                hideSuggestions();
             }
         });
     </script>

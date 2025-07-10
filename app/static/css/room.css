@@ -29,6 +29,7 @@
     max-width: 1000;
     z-index: 1;
     position: relative;
+    cursor: pointer;
 }
 #mapimage:hover {
     -webkit-filter: opacity(20%);
@@ -112,6 +113,12 @@ h3 {
     margin: 25;
 }
 
+#navigation_header {
+    padding: 2px 25px 0px 25px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 #header {
 	padding: 2px 25px 1px 25px;
 }
@@ -125,6 +132,8 @@ h3 {
 
 #title_row h3 {
     margin: 0;
+    text-shadow: 2px 2px 0px rgba(70, 80, 90, 0.8), 3px 3px 6px rgba(70, 80, 90, 0.6);
+    font-weight: bold;
 }
 
 #tag_selector {
@@ -173,10 +182,14 @@ h3 {
 
 #map_navigation {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 3px 0;
 }
 
-#map_dropdown {
+#map_dropdown,
+#adjacent_map_dropdown {
     padding: 2px 4px;
     font-size: 11px !important;
     border: 1px solid #ccc;
@@ -187,7 +200,22 @@ h3 {
     margin-bottom: 0;
 }
 
-#map_dropdown optgroup {
+#search_link {
+    font-size: 13px;
+    color: inherit;
+    text-decoration: none;
+    padding: 3px 6px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+}
+
+#search_link:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    text-decoration: underline;
+}
+
+#map_dropdown optgroup,
+#adjacent_map_dropdown optgroup {
     font-weight: bold;
     font-size: 12px !important;
     background-color: #e6f3ff;
@@ -195,7 +223,8 @@ h3 {
     padding: 2px 4px;
 }
 
-#map_dropdown option {
+#map_dropdown option,
+#adjacent_map_dropdown option {
     font-weight: normal;
     font-size: 11px !important;
     color: hsl(205deg, 16%, 77%) !important;
