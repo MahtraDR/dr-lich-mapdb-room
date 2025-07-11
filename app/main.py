@@ -35,7 +35,7 @@ def not_found(e):
 
 @app.route("/")
 def root():
-    return render_template("404.html")
+    return render_template("search.html")
 
 
 @app.route("/u<int:simu_id>")

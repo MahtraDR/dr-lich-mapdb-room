@@ -3,7 +3,7 @@
         <label for="search" style="font-size: 14px; margin-bottom: 3px; display: block; font-weight: bold;">Search by: Room ID, UID (u12345), tag name, or text in room titles/descriptions</label>
         <input type="text" id="search" name="search" style="width: 100%; padding: 6px; margin-bottom: 4px; font-size: 14px; box-sizing: border-box;"
                placeholder="Room Lich ID, Simu ID, or any search criteria"
-               value="{{ request.form['search'] }}"
+               value="{{ request.form.get('search', '') }}"
                aria-describedby="search-help">
         <div id="search-help" class="sr-only">Enter a room ID number, UID starting with u, tag name, or any text to search in room titles and descriptions</div>
         <button type="submit" style="padding: 6px 12px; font-size: 14px;" aria-label="Search rooms">Search</button>
@@ -285,7 +285,7 @@
             }
         }
     </script>
-    {% if not results and results != None %}
+    {% if results is not none and not results %}
     <div role="alert" aria-live="assertive">
         <h3>No rooms found</h3>
         <p>Check your search terms and try again. You can search by room ID, UID, tag name, or text in room titles and descriptions.</p>
@@ -303,8 +303,8 @@
         <ul role="list">
         {% for rid, rinfo in results.items() -%}
             <li>
-                <a href="{{ url_for('room_page', room_id=rid) }}" aria-label="Room {{ rid }}, UID {{ rinfo.get('uid', ['None'])[0] }}, {{ rinfo['title'][0] }}">
-                    {{ rid }} - {{ rinfo.get('uid', ['None'])[0] }} - {{ rinfo['title'][0] }}
+                <a href="{{ url_for('room_page', room_id=rid) }}" aria-label="Room {{ rid }}, UID u{{ rinfo.get('uid', ['None'])[0] }}, {{ rinfo['title'][0] }}">
+                    {{ rid }} - u{{ rinfo.get('uid', ['None'])[0] }} - {{ rinfo['title'][0] }}
                 </a>
             </li>
         {% endfor %}
