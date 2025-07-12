@@ -156,10 +156,10 @@
                     .then(response => response.json())
                     .then(images => {
                         imageSelect.innerHTML = '<option value="">Select a map...</option>';
-                        images.forEach(image => {
+                        images.forEach(imageData => {
                             const option = document.createElement('option');
-                            option.value = image;
-                            option.textContent = image;
+                            option.value = imageData.filename;
+                            option.textContent = imageData.display_name;
                             imageSelect.appendChild(option);
                         });
                         imageSelect.disabled = false;
@@ -285,7 +285,7 @@
             }
         }
     </script>
-    {% if results is not none and not results %}
+    {% if results is not none and not results and (request.form.get('search') or request.form.get('tag')) %}
     <div role="alert" aria-live="assertive">
         <h3>No rooms found</h3>
         <p>Check your search terms and try again. You can search by room ID, UID, tag name, or text in room titles and descriptions.</p>
@@ -297,14 +297,43 @@
         <p>You matched many results. Only the first 100 are shown. Try narrowing your search for more specific results.</p>
     </div>
     {% endif %}
+    {% if map_groups %}
+    <section aria-labelledby="map-groups-heading">
+        <h3 id="map-groups-heading">Too many results ({{ total_results }} found) - Select a map to refine search</h3>
+        <p>Your search for "<strong>{{ search_term }}</strong>" returned too many results to display individually. Please select a map below to see results from that specific area:</p>
+
+        <div class="map-groups-container">
+        {% for map_image, map_data in map_groups.items() | sort(attribute='1.display_name') %}
+            <form method="post" action="/search" class="map-group-form">
+                <input type="hidden" name="search" value="{{ search_term }}">
+                <input type="hidden" name="map_filter" value="{{ map_image }}">
+                <button type="submit" class="map-group-button" aria-label="Search for {{ search_term }} on map {{ map_data.display_name }}, {{ map_data.count }} results">
+                    <span class="map-name">{{ map_data.display_name }}</span><span class="map-count">({{ map_data.count }})</span>
+                </button>
+            </form>
+        {% endfor %}
+        {% if unmapped_count > 0 %}
+            <form method="post" action="/search" class="map-group-form">
+                <input type="hidden" name="search" value="{{ search_term }}">
+                <input type="hidden" name="map_filter" value="UNMAPPED">
+                <button type="submit" class="map-group-button unmapped-button" aria-label="Search for {{ search_term }} in unmapped rooms, {{ unmapped_count }} results">
+                    <span class="map-name">Unmapped Rooms</span><span class="map-count">({{ unmapped_count }})</span>
+                </button>
+            </form>
+        {% endif %}
+        </div>
+    </section>
+    {% endif %}
     {% if results %}
     <section aria-labelledby="search-results-heading">
         <h3 id="search-results-heading">Search Results ({{ results|length }} found)</h3>
-        <ul role="list">
+        <ul role="list" class="search-results-list">
         {% for rid, rinfo in results.items() -%}
-            <li>
-                <a href="{{ url_for('room_page', room_id=rid) }}" aria-label="Room {{ rid }}, UID u{{ rinfo.get('uid', ['None'])[0] }}, {{ rinfo['title'][0] }}">
-                    {{ rid }} - u{{ rinfo.get('uid', ['None'])[0] }} - {{ rinfo['title'][0] }}
+            <li class="search-result-item">
+                <a href="{{ url_for('room_page', room_id=rid) }}" class="result-link" 
+                   aria-label="Navigate to {{ rinfo['title'][0] }}, room ID {{ rid }}{% if rinfo.get('uid') %}, UID u{{ rinfo.get('uid', ['None'])[0] }}{% endif %}{% if rinfo.get('location') %}, in {{ rinfo.location }}{% endif %}{% if rinfo.get('image') %}, on map {{ rinfo.image.replace('_', ' ').replace('.png', '').replace('.jpg', '').replace('.gif', '') }}{% endif %}">
+                    <span class="result-title">{{ rinfo['title'][0] }}</span>
+                    <span class="result-meta">ID: {{ rid }} | UID: u{{ rinfo.get('uid', ['None'])[0] }}{% if rinfo.get('location') %} | {{ rinfo.location }}{% endif %}{% if rinfo.get('image') %} | {{ rinfo.image.replace('_', ' ').replace('.png', '').replace('.jpg', '').replace('.gif', '') }}{% endif %}</span>
                 </a>
             </li>
         {% endfor %}
