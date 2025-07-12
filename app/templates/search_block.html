@@ -19,9 +19,9 @@
             <label for="tagInput" class="sr-only">Tag name</label>
             <input type="text" name="tag" id="tagInput" placeholder="Start typing a tag..." autocomplete="off"
                    style="width: 100%; padding: 6px; font-size: 14px; box-sizing: border-box;"
-                   aria-describedby="tag-help" aria-expanded="false" aria-autocomplete="list" role="combobox">
-            <div id="tag-help" class="sr-only">Start typing to see available tags. Use arrow keys to navigate suggestions.</div>
-            <div id="tagSuggestions" style="display: none; border: 1px solid #ccc; background: white; max-height: 150px; overflow-y: auto; position: absolute; top: calc(100% - 2px); left: 0; right: 0; z-index: 1000; font-size: 14px; margin-top: 0;" role="listbox" aria-label="Tag suggestions"></div>
+                   aria-describedby="tag-help" aria-expanded="false" aria-autocomplete="list" aria-haspopup="listbox" role="combobox" aria-owns="tagSuggestions">
+            <div id="tag-help" class="sr-only">Start typing to see available tags. Use arrow keys to navigate suggestions, Enter to select, Escape to close.</div>
+            <div id="tagSuggestions" style="display: none; border: 1px solid #ccc; background: white; max-height: 150px; overflow-y: auto; position: absolute; top: calc(100% - 2px); left: 0; right: 0; z-index: 1000; font-size: 14px; margin-top: 0;" role="listbox" aria-label="Available tag suggestions"></div>
         </div>
 
         <div style="margin-bottom: 4px; padding-left: 0;">
@@ -90,7 +90,7 @@
         function selectTag(tag) {
             tagInput.value = tag;
             hideSuggestions();
-            announceUpdate(`Selected tag: ${tag}`);
+            announceUpdate(`Selected tag: ${tag}. Loading available maps.`);
             loadImagesForTag(tag);
         }
 
@@ -120,6 +120,8 @@
             tagInput.setAttribute('aria-expanded', 'true');
             if (tags.length > 0) {
                 tagInput.setAttribute('aria-activedescendant', '');
+                // Announce available suggestions count
+                announceUpdate(`${tags.length} tag suggestion${tags.length === 1 ? '' : 's'} available. Use arrow keys to navigate.`);
             }
         }
 
@@ -131,6 +133,8 @@
                     item.style.backgroundColor = '#0066cc';
                     item.style.color = 'white';
                     tagInput.setAttribute('aria-activedescendant', item.id);
+                    // Announce the focused suggestion for screen readers
+                    announceUpdate(`Focused: ${item.textContent}`, false);
                 } else {
                     item.style.backgroundColor = 'white';
                     item.style.color = '#333';
