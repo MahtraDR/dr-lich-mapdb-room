@@ -19,9 +19,9 @@
             <label for="tagInput" class="sr-only">Tag name</label>
             <input type="text" name="tag" id="tagInput" placeholder="Start typing a tag..." autocomplete="off"
                    style="width: 100%; padding: 6px; font-size: 14px; box-sizing: border-box;"
-                   aria-describedby="tag-help" aria-expanded="false" aria-autocomplete="list" aria-haspopup="listbox" role="combobox" aria-owns="tagSuggestions">
-            <div id="tag-help" class="sr-only">Start typing to see available tags. Use arrow keys to navigate suggestions, Enter to select, Escape to close.</div>
-            <div id="tagSuggestions" style="display: none; border: 1px solid #ccc; background: white; max-height: 150px; overflow-y: auto; position: absolute; top: calc(100% - 2px); left: 0; right: 0; z-index: 1000; font-size: 14px; margin-top: 0;" role="listbox" aria-label="Available tag suggestions"></div>
+                   aria-describedby="tag-help" aria-expanded="false" aria-autocomplete="both" role="combobox" aria-controls="tagSuggestions">
+            <div id="tag-help" class="sr-only">Start typing to see available tags. Use arrow keys to navigate suggestions, Enter to select.</div>
+            <ul id="tagSuggestions" tabindex="0" style="display: none; border: 1px solid #ccc; background: white; max-height: 150px; overflow-y: auto; position: absolute; top: calc(100% - 2px); left: 0; right: 0; z-index: 1000; font-size: 14px; margin-top: 0; list-style: none; padding: 0; margin: 0;" role="listbox" aria-label="Tag suggestions"></ul>
         </div>
 
         <div style="margin-bottom: 4px; padding-left: 0;">
@@ -90,56 +90,66 @@
         function selectTag(tag) {
             tagInput.value = tag;
             hideSuggestions();
+            // Ensure focus stays on input
+            tagInput.focus();
             announceUpdate(`Selected tag: ${tag}. Loading available maps.`);
             loadImagesForTag(tag);
         }
 
-        // Show suggestions
+        // Show suggestions with proper ARIA structure
         function showSuggestions(tags) {
             tagSuggestions.innerHTML = '';
             selectedIndex = -1;
+
             tags.forEach((tag, index) => {
-                const div = document.createElement('div');
-                div.textContent = tag;
-                div.style.padding = '4px 8px';
-                div.style.cursor = 'pointer';
-                div.style.borderBottom = '1px solid #eee';
-                div.style.color = '#333';
-                div.style.backgroundColor = 'white';
-                div.className = 'suggestion-item';
-                div.setAttribute('role', 'option');
-                div.setAttribute('id', `tag-option-${index}`);
-                div.addEventListener('click', () => selectTag(tag));
-                div.addEventListener('mouseenter', () => {
-                    selectedIndex = index;
-                    updateHighlight();
+                const li = document.createElement('li');
+                li.textContent = tag;
+                li.style.padding = '6px 8px';
+                li.style.cursor = 'pointer';
+                li.style.borderBottom = '1px solid #eee';
+                li.style.color = '#333';
+                li.style.backgroundColor = 'white';
+                li.className = 'suggestion-item';
+                li.setAttribute('role', 'option');
+                li.setAttribute('id', `tag-option-${index}`);
+                li.setAttribute('aria-selected', 'false');
+
+                // Simple click handler
+                li.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectTag(tag);
                 });
-                tagSuggestions.appendChild(div);
+
+                tagSuggestions.appendChild(li);
             });
+
             tagSuggestions.style.display = 'block';
             tagInput.setAttribute('aria-expanded', 'true');
-            if (tags.length > 0) {
-                tagInput.setAttribute('aria-activedescendant', '');
-                // Announce available suggestions count
-                announceUpdate(`${tags.length} tag suggestion${tags.length === 1 ? '' : 's'} available. Use arrow keys to navigate.`);
-            }
+
+            // Simple announcement
+            announceUpdate(`${tags.length} suggestions available`);
         }
 
-        // Update highlight based on selectedIndex
+        // Update highlight and selection state
         function updateHighlight() {
             const items = tagSuggestions.querySelectorAll('.suggestion-item');
             items.forEach((item, index) => {
                 if (index === selectedIndex) {
                     item.style.backgroundColor = '#0066cc';
                     item.style.color = 'white';
+                    item.setAttribute('aria-selected', 'true');
                     tagInput.setAttribute('aria-activedescendant', item.id);
-                    // Announce the focused suggestion for screen readers
-                    announceUpdate(`Focused: ${item.textContent}`, false);
                 } else {
                     item.style.backgroundColor = 'white';
                     item.style.color = '#333';
+                    item.setAttribute('aria-selected', 'false');
                 }
             });
+
+            // Clear aria-activedescendant if no item selected
+            if (selectedIndex === -1) {
+                tagInput.removeAttribute('aria-activedescendant');
+            }
         }
 
         // Hide suggestions
@@ -232,37 +242,83 @@
             }
         });
 
-        // Handle blur to hide suggestions
-        tagInput.addEventListener('blur', function() {
-            setTimeout(() => hideSuggestions(), 100);
+        // Blur handlers for both input and listbox
+        tagInput.addEventListener('blur', function(e) {
+            setTimeout(() => {
+                if (document.activeElement !== tagInput && document.activeElement !== tagSuggestions) {
+                    hideSuggestions();
+                }
+            }, 150);
         });
 
-        // Handle arrow keys and enter for suggestion navigation
+        tagSuggestions.addEventListener('blur', function(e) {
+            setTimeout(() => {
+                if (document.activeElement !== tagInput && document.activeElement !== tagSuggestions) {
+                    hideSuggestions();
+                }
+            }, 150);
+        });
+
+        // Input keyboard handling - move to listbox on arrow down
         tagInput.addEventListener('keydown', function(e) {
-            const items = tagSuggestions.querySelectorAll('.suggestion-item');
             const isVisible = tagSuggestions.style.display === 'block';
 
-            if (!isVisible || items.length === 0) {
+            if (!isVisible) {
                 return;
             }
 
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
-                updateHighlight();
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                selectedIndex = Math.max(selectedIndex - 1, -1);
-                updateHighlight();
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                if (selectedIndex >= 0 && selectedIndex < items.length) {
-                    selectTag(items[selectedIndex].textContent);
-                } else if (items.length > 0) {
-                    selectTag(items[0].textContent);
-                }
-            } else if (e.key === 'Escape') {
-                hideSuggestions();
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    // Move focus to listbox for screen reader navigation
+                    tagSuggestions.focus();
+                    selectedIndex = 0;
+                    updateHighlight();
+                    break;
+
+                case 'Escape':
+                    e.preventDefault();
+                    hideSuggestions();
+                    break;
+            }
+        });
+
+        // Listbox keyboard handling
+        tagSuggestions.addEventListener('keydown', function(e) {
+            const items = tagSuggestions.querySelectorAll('.suggestion-item');
+
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    updateHighlight();
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (selectedIndex <= 0) {
+                        // Move back to input when at top
+                        tagInput.focus();
+                        selectedIndex = -1;
+                        updateHighlight();
+                    } else {
+                        selectedIndex = Math.max(selectedIndex - 1, 0);
+                        updateHighlight();
+                    }
+                    break;
+
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedIndex >= 0 && selectedIndex < items.length) {
+                        selectTag(items[selectedIndex].textContent);
+                    }
+                    break;
+
+                case 'Escape':
+                    e.preventDefault();
+                    hideSuggestions();
+                    tagInput.focus();
+                    break;
             }
         });
 
