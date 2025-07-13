@@ -28,14 +28,62 @@ with open("app/data/updated_at", "r") as f:
     updated_at = f.read()
 
 
+def get_available_maps():
+    """Generate available maps data for navigation dropdown"""
+    available_maps = {}
+
+    # First pass: collect all maps and find rooms with meta tags
+    for room_info in room_data:
+        if room_info.get("image") and room_info.get("image_coords"):
+            map_image = room_info["image"]
+
+            # Initialize map entry if not exists
+            if map_image not in available_maps:
+                available_maps[map_image] = {
+                    "room_id": room_info["id"],
+                    "display_name": map_image,
+                    "category": "Other"
+                }
+
+            # Check for meta tags
+            if room_info.get("tags"):
+                for tag in room_info["tags"]:
+                    # Check for mapname tag
+                    if tag.startswith("meta:mapname:"):
+                        map_name = tag.replace("meta:mapname:", "")
+                        available_maps[map_image]["display_name"] = map_name
+                        available_maps[map_image]["room_id"] = room_info["id"]
+
+                    # Check for mapcategory tag
+                    elif tag.startswith("meta:mapcategory:"):
+                        category = tag.replace("meta:mapcategory:", "")
+                        available_maps[map_image]["category"] = category
+
+    # Group maps by category and sort
+    categorized_maps = {}
+    for map_image, map_data in available_maps.items():
+        category = map_data["category"]
+        if category not in categorized_maps:
+            categorized_maps[category] = []
+        categorized_maps[category].append((map_data["display_name"], map_data["room_id"]))
+
+    # Sort categories and maps within each category
+    sorted_categories = []
+    for category in sorted(categorized_maps.keys()):
+        sorted_maps = sorted(categorized_maps[category])
+        sorted_categories.append((category, sorted_maps))
+
+    return sorted_categories
+
+
 @app.errorhandler(404)
 def not_found(e):
-    return render_template("404.html")
+    return render_template("404.html", available_maps=get_available_maps())
 
 
 @app.route("/")
 def root():
-    return render_template("search.html")
+    return render_template("search.html", available_maps=get_available_maps())
 
 
 @app.route("/u<int:simu_id>")
@@ -351,7 +399,8 @@ def search():
 								 unmapped_count=unmapped_count,
 								 search_term=search,
 								 total_results=len(room_list),
-								 overflow=False)
+								 overflow=False,
+								 available_maps=get_available_maps())
 
 		# Normal results display (≤100 results or map-filtered results)
 		overflow = len(room_list) > 100 and not map_filter
@@ -359,9 +408,9 @@ def search():
 			# Limit to first 100 for display
 			room_list = dict(list(room_list.items())[:100])
 
-		return render_template('search.html', results=room_list, overflow=overflow, search_term=search)
+		return render_template('search.html', results=room_list, overflow=overflow, search_term=search, available_maps=get_available_maps())
 	else:
-		return render_template('search.html', results=None, overflow=False)
+		return render_template('search.html', results=None, overflow=False, available_maps=get_available_maps())
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=8000)
