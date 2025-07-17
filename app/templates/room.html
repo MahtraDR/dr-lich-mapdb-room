@@ -225,7 +225,48 @@
         <script>
             // Room data for tag highlighting
             const sameImageRooms = {{ same_image_rooms | tojson }};
-            const currentImageDimensions = {{ image_dimensions | tojson }};
+
+            // Fix main room highlight box to use actual rendered dimensions
+            window.addEventListener('load', function() {
+                const imgElement = document.getElementById('mapimage');
+                if (imgElement && imgElement.complete) {
+                    const origWidth = imgElement.naturalWidth;
+                    const origHeight = imgElement.naturalHeight;
+                    const renderedWidth = imgElement.clientWidth;
+                    const renderedHeight = imgElement.clientHeight;
+
+                    const widthRatio = renderedWidth / origWidth;
+                    const heightRatio = renderedHeight / origHeight;
+
+                    const currentRoomId = {{ room.id }};
+                    const currentRoom = sameImageRooms.find(r => r.id === currentRoomId);
+
+                    if (currentRoom && currentRoom.image_coords) {
+                        const jsCalculatedX = Math.floor(widthRatio * currentRoom.image_coords[0]);
+                        const jsCalculatedY = Math.floor(heightRatio * currentRoom.image_coords[1]);
+                        const jsOriginalWidth = Math.floor(widthRatio * currentRoom.image_coords[2]) - Math.floor(widthRatio * currentRoom.image_coords[0]);
+                        const jsOriginalHeight = Math.floor(heightRatio * currentRoom.image_coords[3]) - Math.floor(heightRatio * currentRoom.image_coords[1]);
+
+                        const minSize = 10;
+                        const jsFinalWidth = Math.max(jsOriginalWidth, minSize);
+                        const jsFinalHeight = Math.max(jsOriginalHeight, minSize);
+                        const jsWidthAdjustment = (jsFinalWidth - jsOriginalWidth) / 2;
+                        const jsHeightAdjustment = (jsFinalHeight - jsOriginalHeight) / 2;
+
+                        const jsFinalX = jsCalculatedX - jsWidthAdjustment;
+                        const jsFinalY = jsCalculatedY - jsHeightAdjustment;
+
+                        // Update main room box to use correct dimensions
+                        const mainRoomBox = document.getElementById('highlight_box');
+                        if (mainRoomBox) {
+                            mainRoomBox.style.marginLeft = jsFinalX + 'px';
+                            mainRoomBox.style.marginTop = jsFinalY + 'px';
+                            mainRoomBox.style.width = jsFinalWidth + 'px';
+                            mainRoomBox.style.height = jsFinalHeight + 'px';
+                        }
+                    }
+                }
+            });
 
             // Check for highlight parameters and pre-select dropdowns
             const urlParams = new URLSearchParams(window.location.search);
@@ -271,13 +312,16 @@
                     return;
                 }
 
-                // Get the original image dimensions
+                // Get the actual rendered image dimensions
                 const imgElement = document.getElementById('mapimage');
                 const origWidth = imgElement.naturalWidth;
                 const origHeight = imgElement.naturalHeight;
+                const renderedWidth = imgElement.clientWidth;
+                const renderedHeight = imgElement.clientHeight;
 
-                const widthRatio = currentImageDimensions.width / origWidth;
-                const heightRatio = currentImageDimensions.height / origHeight;
+                // Use the actual rendered ratios
+                const widthRatio = renderedWidth / origWidth;
+                const heightRatio = renderedHeight / origHeight;
 
                 // Process each room
                 sameImageRooms.forEach(room => {
@@ -289,6 +333,10 @@
                             const highlightBox = document.createElement('div');
                             highlightBox.style.position = 'absolute';
                             highlightBox.style.zIndex = '8';
+
+                            // Get wrapper padding for positioning calculation
+                            const imageWrapper = document.getElementById('image_wrapper');
+                            const wrapperStyle = window.getComputedStyle(imageWrapper);
 
                             // Determine highlight type and class
                             if (hasTag && hasLocation) {
@@ -312,8 +360,15 @@
                             const widthAdjustment = (finalWidth - originalWidth) / 2;
                             const heightAdjustment = (finalHeight - originalHeight) / 2;
 
-                            highlightBox.style.left = (Math.floor(widthRatio * room.image_coords[0]) + 25 - widthAdjustment) + 'px';
-                            highlightBox.style.top = (Math.floor(heightRatio * room.image_coords[1]) + 1 - heightAdjustment) + 'px';
+                            // Add wrapper padding to match margin-based positioning
+                            const paddingLeft = parseFloat(wrapperStyle.paddingLeft);
+                            const paddingTop = parseFloat(wrapperStyle.paddingTop);
+
+                            const calcLeft = Math.floor(widthRatio * room.image_coords[0]) - widthAdjustment + paddingLeft;
+                            const calcTop = Math.floor(heightRatio * room.image_coords[1]) - heightAdjustment + paddingTop;
+
+                            highlightBox.style.left = calcLeft + 'px';
+                            highlightBox.style.top = calcTop + 'px';
                             highlightBox.style.width = finalWidth + 'px';
                             highlightBox.style.height = finalHeight + 'px';
                             highlightBox.title = `Room ${room.id}: ${room.title[0]}`;
@@ -434,18 +489,22 @@
             }
 
             function handleMapClick(event) {
-                // Get click coordinates relative to the image
-                const rect = event.target.getBoundingClientRect();
+                // Get click coordinates relative to the image wrapper (to match our highlight positioning)
+                const wrapper = document.getElementById('image_wrapper');
+                const rect = wrapper.getBoundingClientRect();
                 const clickX = event.clientX - rect.left;
                 const clickY = event.clientY - rect.top;
 
-                // Get the original image dimensions
+                // Get the actual rendered image dimensions
                 const imgElement = document.getElementById('mapimage');
                 const origWidth = imgElement.naturalWidth;
                 const origHeight = imgElement.naturalHeight;
+                const renderedWidth = imgElement.clientWidth;
+                const renderedHeight = imgElement.clientHeight;
 
-                const widthRatio = currentImageDimensions.width / origWidth;
-                const heightRatio = currentImageDimensions.height / origHeight;
+                // Use the actual rendered ratios
+                const widthRatio = renderedWidth / origWidth;
+                const heightRatio = renderedHeight / origHeight;
 
                 // Find which room was clicked
                 let clickedRoom = null;
@@ -466,8 +525,14 @@
                         const widthAdjustment = (finalWidth - originalWidth) / 2;
                         const heightAdjustment = (finalHeight - originalHeight) / 2;
 
-                        const roomLeft = originalX - widthAdjustment;
-                        const roomTop = originalY - heightAdjustment;
+                        // Add wrapper padding to match margin-based positioning
+                        const imageWrapper = document.getElementById('image_wrapper');
+                        const wrapperStyle = window.getComputedStyle(imageWrapper);
+                        const paddingLeft = parseFloat(wrapperStyle.paddingLeft);
+                        const paddingTop = parseFloat(wrapperStyle.paddingTop);
+
+                        const roomLeft = originalX - widthAdjustment + paddingLeft;
+                        const roomTop = originalY - heightAdjustment + paddingTop;
                         const roomRight = roomLeft + finalWidth;
                         const roomBottom = roomTop + finalHeight;
 
