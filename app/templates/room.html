@@ -2,6 +2,28 @@
 <html lang="en-US">
     <head>
             <title>{{ room.title[0] }} - Lich: {{ room.id }} - UID: {{ room.uid | first }}</title>
+	    <!-- Manifest file -->
+            <link rel="manifest" href="/site.webmanifest">
+
+            <!-- Standard favicon -->
+            <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+            <!-- PNG favicons -->
+            <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+            <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+            <!-- Apple touch icon -->
+            <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+            <!-- Android Chrome icons (these match your manifest) -->
+            <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+            <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+
+            <!-- Theme color for mobile browsers -->
+            <meta name="theme-color" content="#11191f">
+
+            <!-- Additional mobile optimization -->
+            <meta name="msapplication-TileColor" content="#11191f">
             <link rel="stylesheet" href="static/css/pico.min.css">
             <link rel="stylesheet" href="static/css/prism.css">
             <link rel="stylesheet" href="static/css/room.css">
