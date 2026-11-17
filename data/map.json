@@ -473115,7 +473115,8 @@
     "16204": "north",
     "16236": "go otter den",
     "17098": "go elegant emporium",
-    "17099": "go canvas tent"
+    "17099": "go canvas tent",
+    "52512": "go sturdy lean-to"
   },
   "timeto": {
     "10529": 0.2,
@@ -473124,7 +473125,8 @@
     "16204": 0.2,
     "16236": 0.2,
     "17098": 0.2,
-    "17099": 0.2
+    "17099": 0.2,
+    "52512": 0.2
   },
   "image": "Andreshlew, Hollows Eve-5.png",
   "image_coords": [
@@ -550920,5 +550922,22 @@
   "timeto": {
     "10488": 0.2,
     "16241": 0.2
+  }
+},{
+  "id": 52512,
+  "title": [
+    "[[Shadows and Secrets, Shadowy Showroom]]"
+  ],
+  "description": [
+    "Modest in size but well furnished, the room is lit by a number of trumpet-shaped sconces thoughtfully spaced on walls covered with midnight and silver wallpaper.  Dark hardwood floors hold a variety of surfaces, while a neatly dressed clerk leans against the wall in one dark corner.  A small sign near mannequins bears neat script.  The room carries a faint scent of violets and smoke, as though used as a workshop at other times."
+  ],
+  "paths": [
+    "Obvious exits: none."
+  ],
+  "wayto": {
+    "16188": "go recessed door"
+  },
+  "timeto": {
+    "16188": 0.2
   }
 }]
